@@ -129,7 +129,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		apt-get update
 		apt-get install -y wget
 	fi
-	clear
+	echo
 	echo 'Welcome to this OpenVPN road warrior installer!'
 	# If system has a single IPv4, it is selected automatically. Else, ask the user
 	if [[ $(ip -4 addr | grep inet | grep -vEc '127(\.[0-9]{1,3}){3}') -eq 1 ]]; then
@@ -189,10 +189,10 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		read -p "Protocol [1]: " protocol
 	done
 	case "$protocol" in
-		1|"") 
+		1|"")
 		protocol=udp
 		;;
-		2) 
+		2)
 		protocol=tcp
 		;;
 	esac
@@ -459,7 +459,7 @@ verb 3" > /etc/openvpn/server/client-common.txt
 	echo "The client configuration is available in:" ~/"$client.ovpn"
 	echo "New clients can be added by running this script again."
 else
-	clear
+	echo
 	echo "OpenVPN is already installed."
 	echo
 	echo "Select an option:"
