@@ -283,10 +283,10 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 		set -x
 		# Create the PKI, set up the CA and the server and client certificates
 		./easyrsa init-pki >/dev/null
-		./easyrsa --batch build-ca nopass >/dev/null
-		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-server-full server nopass >/dev/null
-		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass >/dev/null
-		EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl >/dev/null
+		./easyrsa --batch build-ca nopass >/dev/null 2>&1
+		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-server-full server nopass >/dev/null 2>&1
+		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass >/dev/null 2>&1
+		EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl >/dev/null 2>&1
 		# Move the stuff we need
 		cp pki/ca.crt pki/private/ca.key pki/issued/server.crt pki/private/server.key pki/crl.pem /etc/openvpn/server
 		# CRL is read with each client connection, while OpenVPN is dropped to nobody
