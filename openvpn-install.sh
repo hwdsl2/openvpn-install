@@ -250,14 +250,24 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
 	fi
 	if [[ "$os" = "debian" || "$os" = "ubuntu" ]]; then
-		apt-get update
-		apt-get install -y openvpn openssl ca-certificates $firewall
+		export DEBIAN_FRONTEND=noninteractive
+		(
+			set -x
+			apt-get -yqq update
+			apt-get -yqq install openvpn openssl ca-certificates $firewall >/dev/null
+		)
 	elif [[ "$os" = "centos" ]]; then
-		yum install -y epel-release
-		yum install -y openvpn openssl ca-certificates tar $firewall
+		(
+			set -x
+			yum -y -q install epel-release >/dev/null
+			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null
+		)
 	else
 		# Else, OS must be Fedora
-		dnf install -y openvpn openssl ca-certificates tar $firewall
+		(
+			set -x
+			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
+		)
 	fi
 	# If firewalld was just installed, enable it
 	if [[ "$firewall" == "firewalld" ]]; then
@@ -269,20 +279,23 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 	{ wget -qO- "$easy_rsa_url" 2>/dev/null || curl -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
 	chown -R root:root /etc/openvpn/server/easy-rsa/
 	cd /etc/openvpn/server/easy-rsa/
-	# Create the PKI, set up the CA and the server and client certificates
-	./easyrsa init-pki
-	./easyrsa --batch build-ca nopass
-	EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-server-full server nopass
-	EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass
-	EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl
-	# Move the stuff we need
-	cp pki/ca.crt pki/private/ca.key pki/issued/server.crt pki/private/server.key pki/crl.pem /etc/openvpn/server
-	# CRL is read with each client connection, while OpenVPN is dropped to nobody
-	chown nobody:"$group_name" /etc/openvpn/server/crl.pem
-	# Without +x in the directory, OpenVPN can't run a stat() on the CRL file
-	chmod o+x /etc/openvpn/server/
-	# Generate key for tls-crypt
-	openvpn --genkey --secret /etc/openvpn/server/tc.key
+	(
+		set -x
+		# Create the PKI, set up the CA and the server and client certificates
+		./easyrsa init-pki >/dev/null
+		./easyrsa --batch build-ca nopass >/dev/null
+		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-server-full server nopass >/dev/null
+		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass >/dev/null
+		EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl >/dev/null
+		# Move the stuff we need
+		cp pki/ca.crt pki/private/ca.key pki/issued/server.crt pki/private/server.key pki/crl.pem /etc/openvpn/server
+		# CRL is read with each client connection, while OpenVPN is dropped to nobody
+		chown nobody:"$group_name" /etc/openvpn/server/crl.pem
+		# Without +x in the directory, OpenVPN can't run a stat() on the CRL file
+		chmod o+x /etc/openvpn/server/
+		# Generate key for tls-crypt
+		openvpn --genkey --secret /etc/openvpn/server/tc.key >/dev/null
+	)
 	# Create the DH parameters file using the predefined ffdhe2048 group
 	echo '-----BEGIN DH PARAMETERS-----
 MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
