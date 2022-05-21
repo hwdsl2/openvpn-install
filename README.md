@@ -9,7 +9,7 @@ This script will let you set up your own VPN server in just a few minutes, even 
 Run the script on your Linux server\* and follow the prompts:
 
 ```bash
-wget https://get.vpnsetup.net/ovpn -nv -O openvpn.sh
+wget https://get.vpnsetup.net/ovpn -O openvpn.sh
 sudo bash openvpn.sh
 ```
 
