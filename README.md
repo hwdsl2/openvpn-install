@@ -17,6 +17,8 @@ sudo bash openvpn.sh
 
 After setup, you can run the script again to manage users or uninstall OpenVPN.
 
+[OpenVPN clients](https://openvpn.net/vpn-client/) are available for Windows, macOS, iOS, Android and Linux.
+
 \* A cloud server, virtual private server (VPS) or dedicated server.
 
 ### Credits

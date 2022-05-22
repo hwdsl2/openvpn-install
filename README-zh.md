@@ -17,6 +17,8 @@ sudo bash openvpn.sh
 
 安装完成后，你可以再次运行脚本来管理用户或卸载 OpenVPN。
 
+[OpenVPN 客户端](https://openvpn.net/vpn-client/) 在 Windows, macOS, iOS, Android 和 Linux 上可用。
+
 \* 一个云服务器，虚拟专用服务器 (VPS) 或者专用服务器。
 
 ### 致谢
