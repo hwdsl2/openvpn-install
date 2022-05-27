@@ -27,11 +27,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 # Detect Debian users running the script with "sh" instead of bash
 if readlink /proc/$$/exe | grep -q "dash"; then
 	echo 'This installer needs to be run with "bash", not "sh".'
-	exit
+	exit 1
 fi
 
 # Discard stdin. Needed when running from an one-liner which includes a newline
@@ -40,7 +39,7 @@ read -N 999999 -t 0.001
 # Detect OpenVZ 6
 if [[ $(uname -r | cut -d "." -f 1) -eq 2 ]]; then
 	echo "The system is running an old kernel, which is incompatible with this installer."
-	exit
+	exit 1
 fi
 
 # Detect OS
@@ -64,50 +63,50 @@ elif [[ -e /etc/fedora-release ]]; then
 else
 	echo "This installer seems to be running on an unsupported distribution.
 Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS and Fedora."
-	exit
+	exit 1
 fi
 
 if [[ "$os" == "ubuntu" && "$os_version" -lt 1804 ]]; then
 	echo "Ubuntu 18.04 or higher is required to use this installer.
 This version of Ubuntu is too old and unsupported."
-	exit
+	exit 1
 fi
 
 if [[ "$os" == "debian" && "$os_version" -lt 9 ]]; then
 	echo "Debian 9 or higher is required to use this installer.
 This version of Debian is too old and unsupported."
-	exit
+	exit 1
 fi
 
 if [[ "$os" == "centos" && "$os_version" -lt 7 ]]; then
 	echo "CentOS 7 or higher is required to use this installer.
 This version of CentOS is too old and unsupported."
-	exit
+	exit 1
 fi
 
 if [ "$os" = "centos" ]; then
 	if grep -qs "hwdsl2 VPN script" /etc/sysconfig/nftables.conf \
 		|| systemctl is-active --quiet nftables 2>/dev/null; then
 		echo "This system has nftables enabled, which is not supported by this installer."
-		exit
+		exit 1
 	fi
 fi
 
 # Detect environments where $PATH does not include the sbin directories
 if ! grep -q sbin <<< "$PATH"; then
 	echo '$PATH does not include sbin. Try using "su -" instead of "su".'
-	exit
+	exit 1
 fi
 
 if [[ "$EUID" -ne 0 ]]; then
 	echo "This installer needs to be run with superuser privileges."
-	exit
+	exit 1
 fi
 
 if [[ ! -e /dev/net/tun ]] || ! ( exec 7<>/dev/net/tun ) 2>/dev/null; then
 	echo "The system does not have the TUN device available.
 TUN needs to be enabled before running this installer."
-	exit
+	exit 1
 fi
 
 new_client () {
