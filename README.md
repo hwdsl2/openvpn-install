@@ -17,6 +17,21 @@ wget https://get.vpnsetup.net/ovpn -O openvpn.sh
 sudo bash openvpn.sh
 ```
 
+<details>
+<summary>
+Alternative one-liner.
+</summary>
+
+You may also use `curl` to download:
+
+```bash
+curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
+sudo bash openvpn.sh
+```
+
+If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), then click the `Raw` button on the right. Press `Ctrl/Cmd+A` to select all, `Ctrl/Cmd+C` to copy, then paste into your favorite editor.
+</details>
+
 After setup, you can run the script again to manage users or uninstall OpenVPN.
 
 [OpenVPN clients](https://openvpn.net/vpn-client/) are available for Windows, macOS, iOS, Android and Linux.

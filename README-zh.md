@@ -17,6 +17,21 @@ wget https://get.vpnsetup.net/ovpn -O openvpn.sh
 sudo bash openvpn.sh
 ```
 
+<details>
+<summary>
+或者，你也可以使用以下命令。
+</summary>
+
+你也可以使用 `curl` 下载：
+
+```bash
+curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
+sudo bash openvpn.sh
+```
+
+如果无法下载，打开 [openvpn-install.sh](openvpn-install.sh)，然后点击右边的 `Raw` 按钮。按快捷键 `Ctrl/Cmd+A` 全选，`Ctrl/Cmd+C` 复制，然后粘贴到你喜欢的编辑器。
+</details>
+
 安装完成后，你可以再次运行脚本来管理用户或卸载 OpenVPN。
 
 [OpenVPN 客户端](https://openvpn.net/vpn-client/) 在 Windows, macOS, iOS, Android 和 Linux 上可用。
