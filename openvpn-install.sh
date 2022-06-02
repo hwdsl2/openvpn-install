@@ -136,9 +136,9 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		export DEBIAN_FRONTEND=noninteractive
 		(
 			set -x
-			apt-get -yqq update
+			apt-get -yqq update || apt-get -yqq update
 			apt-get -yqq install wget >/dev/null
-		)
+		) || exit 1
 	fi
 	echo
 	echo 'Welcome to this OpenVPN server installer!'
@@ -261,21 +261,21 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 		export DEBIAN_FRONTEND=noninteractive
 		(
 			set -x
-			apt-get -yqq update
+			apt-get -yqq update || apt-get -yqq update
 			apt-get -yqq install openvpn openssl ca-certificates $firewall >/dev/null
-		)
+		) || exit 1
 	elif [[ "$os" = "centos" ]]; then
 		(
 			set -x
 			yum -y -q install epel-release >/dev/null
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
-		)
+		) || exit 1
 	else
 		# Else, OS must be Fedora
 		(
 			set -x
 			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
-		)
+		) || exit 1
 	fi
 	# If firewalld was just installed, enable it
 	if [[ "$firewall" == "firewalld" ]]; then
@@ -462,13 +462,13 @@ WantedBy=multi-user.target" >> /etc/systemd/system/openvpn-iptables.service
 				(
 					set -x
 					yum -y -q install policycoreutils-python >/dev/null
-				)
+				) || exit 1
 			else
 				# CentOS 8 or Fedora
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
-				)
+				) || exit 1
 			fi
 		fi
 		semanage port -a -t openvpn_port_t -p "$protocol" "$port"
