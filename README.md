@@ -19,12 +19,20 @@ sudo bash openvpn.sh
 
 <details>
 <summary>
-You may also use curl to download.
+Alternative commands.
 </summary>
+
+You may also use `curl` to download:
 
 ```bash
 curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
 sudo bash openvpn.sh
+```
+
+Alternative setup URL:
+
+```bash
+https://github.com/hwdsl2/openvpn-install/raw/master/openvpn-install.sh
 ```
 
 If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), then click the `Raw` button on the right. Press `Ctrl/Cmd+A` to select all, `Ctrl/Cmd+C` to copy, then paste into your favorite editor.
