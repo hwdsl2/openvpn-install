@@ -44,7 +44,7 @@ https://github.com/hwdsl2/openvpn-install/raw/master/openvpn-install.sh
 
 安装完成后，你可以再次运行脚本来管理用户或者卸载 OpenVPN。
 
-[OpenVPN 客户端](https://openvpn.net/vpn-client/) 在 Windows, macOS, iOS, Android 和 Linux 上可用。要添加 VPN 连接，首先将生成的 `.ovpn` 文件安全地传送到你的设备，然后打开 OpenVPN 应用程序并导入 VPN 配置文件。
+[OpenVPN 客户端](https://openvpn.net/vpn-client/) 在 Windows, macOS, iOS, Android 和 Linux 上可用。macOS 用户也可以使用 [Tunnelblick](https://tunnelblick.net)。要添加 VPN 连接，首先将生成的 `.ovpn` 文件安全地传送到你的设备，然后打开 OpenVPN 应用程序并导入 VPN 配置文件。
 
 开始使用自己的专属 VPN! :sparkles::tada::rocket::sparkles:
 

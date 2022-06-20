@@ -44,7 +44,7 @@ If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), th
 
 After setup, you can run the script again to manage users or uninstall OpenVPN.
 
-[OpenVPN clients](https://openvpn.net/vpn-client/) are available for Windows, macOS, iOS, Android and Linux. To add a VPN connection, first securely transfer the generated `.ovpn` file to your device, then open the OpenVPN App and import the VPN profile.
+[OpenVPN clients](https://openvpn.net/vpn-client/) are available for Windows, macOS, iOS, Android and Linux. macOS users can also use [Tunnelblick](https://tunnelblick.net). To add a VPN connection, first securely transfer the generated `.ovpn` file to your device, then open the OpenVPN App and import the VPN profile.
 
 Enjoy your very own VPN! :sparkles::tada::rocket::sparkles:
 
