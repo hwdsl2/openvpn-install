@@ -56,6 +56,10 @@ elif [[ -e /etc/almalinux-release || -e /etc/rocky-release || -e /etc/centos-rel
 	os="centos"
 	os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
 	group_name="nobody"
+elif grep -qs "Amazon Linux release 2" /etc/system-release; then
+	os="centos"
+	os_version="7"
+	group_name="nobody"
 elif [[ -e /etc/fedora-release ]]; then
 	os="fedora"
 	os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
@@ -264,9 +268,19 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 			apt-get -yqq install openvpn openssl ca-certificates $firewall >/dev/null
 		) || exit 1
 	elif [[ "$os" = "centos" ]]; then
+		if grep -qs "Amazon Linux release 2" /etc/system-release; then
+			(
+				set -x
+				amazon-linux-extras install epel -y >/dev/null
+			) || exit 1
+		else
+			(
+				set -x
+				yum -y -q install epel-release >/dev/null
+			) || exit 1
+		fi
 		(
 			set -x
-			yum -y -q install epel-release >/dev/null
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
 		) || exit 1
 	else
