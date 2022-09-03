@@ -105,7 +105,20 @@ TUN needs to be enabled before running this installer."
 	exit 1
 fi
 
+get_export_dir () {
+	export_to_home_dir=0
+	export_dir=~/
+	if [ -n "$SUDO_USER" ] && getent group "$SUDO_USER" >/dev/null 2>&1; then
+		user_home_dir=$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6)
+		if [ -d "$user_home_dir" ] && [ "$user_home_dir" != "/" ]; then
+			export_dir="$user_home_dir/"
+			export_to_home_dir=1
+		fi
+	fi
+}
+
 new_client () {
+	get_export_dir
 	# Generates the custom client.ovpn
 	{
 	cat /etc/openvpn/server/client-common.txt
@@ -121,7 +134,11 @@ new_client () {
 	echo "<tls-crypt>"
 	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/server/tc.key
 	echo "</tls-crypt>"
-	} > ~/"$client".ovpn
+	} > "$export_dir$client".ovpn
+	if [ "$export_to_home_dir" = "1" ]; then
+		chown "$SUDO_USER:$SUDO_USER" "$export_dir$client".ovpn
+	fi
+	chmod 600 "$export_dir$client".ovpn
 }
 
 if [[ ! -e /etc/openvpn/server/server.conf ]]; then
@@ -513,7 +530,7 @@ verb 3" > /etc/openvpn/server/client-common.txt
 	echo
 	echo "Finished!"
 	echo
-	echo "The client configuration is available in:" ~/"$client.ovpn"
+	echo "The client configuration is available in: $export_dir$client.ovpn"
 	echo "New clients can be added by running this script again."
 else
 	echo
@@ -548,7 +565,7 @@ else
 			# Generates the custom client.ovpn
 			new_client
 			echo
-			echo "$client added. Configuration available in:" ~/"$client.ovpn"
+			echo "$client added. Configuration available in: $export_dir$client.ovpn"
 			exit
 		;;
 		2)
