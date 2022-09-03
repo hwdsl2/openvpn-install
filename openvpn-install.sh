@@ -105,6 +105,11 @@ TUN needs to be enabled before running this installer."
 	exit 1
 fi
 
+abort_and_exit () {
+	echo "Abort. No changes were made." >&2
+	exit 1
+}
+
 get_export_dir () {
 	export_to_home_dir=0
 	export_dir=~/
@@ -552,10 +557,12 @@ else
 			echo
 			echo "Provide a name for the client:"
 			read -p "Name: " unsanitized_client
+			[ -z "$unsanitized_client" ] && abort_and_exit
 			client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
 			while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
 				echo "$client: invalid name."
 				read -p "Name: " unsanitized_client
+				[ -z "$unsanitized_client" ] && abort_and_exit
 				client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
 			done
 			cd /etc/openvpn/server/easy-rsa/
@@ -580,9 +587,11 @@ else
 			echo "Select the client to export:"
 			tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
 			read -p "Client: " client_number
+			[ -z "$client_number" ] && abort_and_exit
 			until [[ "$client_number" =~ ^[0-9]+$ && "$client_number" -le "$number_of_clients" ]]; do
 				echo "$client_number: invalid selection."
 				read -p "Client: " client_number
+				[ -z "$client_number" ] && abort_and_exit
 			done
 			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_number"p)
 			new_client
@@ -603,9 +612,11 @@ else
 			echo "Select the client to revoke:"
 			tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
 			read -p "Client: " client_number
+			[ -z "$client_number" ] && abort_and_exit
 			until [[ "$client_number" =~ ^[0-9]+$ && "$client_number" -le "$number_of_clients" ]]; do
 				echo "$client_number: invalid selection."
 				read -p "Client: " client_number
+				[ -z "$client_number" ] && abort_and_exit
 			done
 			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_number"p)
 			echo
