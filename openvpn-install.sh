@@ -702,6 +702,11 @@ else
 				systemctl disable --now openvpn-server@server.service
 				rm -f /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
 				rm -f /etc/sysctl.d/99-openvpn-forward.conf /etc/sysctl.d/99-openvpn-optimize.conf
+				if [ ! -f /usr/bin/wg-quick ] && [ ! -f /usr/sbin/ipsec ] \
+					&& [ ! -f /usr/local/sbin/ipsec ]; then
+					echo 0 > /proc/sys/net/ipv4/ip_forward
+					echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
+				fi
 				if [[ "$os" = "debian" || "$os" = "ubuntu" ]]; then
 					(
 						set -x
