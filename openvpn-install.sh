@@ -122,6 +122,35 @@ get_export_dir () {
 	fi
 }
 
+update_sysctl () {
+	# Enable net.ipv4.ip_forward for the system
+	echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-openvpn-forward.conf
+	if [[ -n "$ip6" ]]; then
+		# Enable net.ipv6.conf.all.forwarding for the system
+		echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/99-openvpn-forward.conf
+	fi
+	# Optimize sysctl settings such as TCP buffer sizes
+cat > /etc/sysctl.d/99-openvpn-optimize.conf <<'EOF'
+kernel.msgmnb = 65536
+kernel.msgmax = 65536
+net.core.wmem_max = 16777216
+net.core.rmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 87380 16777216
+EOF
+	# Enable TCP BBR congestion control if kernel version >= 4.20
+	if modprobe -q tcp_bbr \
+		&& printf '%s\n%s' "4.20" "$(uname -r)" | sort -C -V; then
+cat >> /etc/sysctl.d/99-openvpn-optimize.conf <<'EOF'
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+EOF
+	fi
+	# Apply sysctl settings
+	sysctl -e -q -p /etc/sysctl.d/99-openvpn-forward.conf
+	sysctl -e -q -p /etc/sysctl.d/99-openvpn-optimize.conf
+}
+
 new_client () {
 	get_export_dir
 	# Generates the custom client.ovpn
@@ -422,16 +451,7 @@ crl-verify crl.pem" >> /etc/openvpn/server/server.conf
 	if [[ "$protocol" = "udp" ]]; then
 		echo "explicit-exit-notify" >> /etc/openvpn/server/server.conf
 	fi
-	# Enable net.ipv4.ip_forward for the system
-	echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-openvpn-forward.conf
-	# Enable without waiting for a reboot or service restart
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	if [[ -n "$ip6" ]]; then
-		# Enable net.ipv6.conf.all.forwarding for the system
-		echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/99-openvpn-forward.conf
-		# Enable without waiting for a reboot or service restart
-		echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
-	fi
+	update_sysctl
 	if systemctl is-active --quiet firewalld.service; then
 		# Using both permanent and not permanent rules to avoid a firewalld
 		# reload.
@@ -681,7 +701,7 @@ else
 				fi
 				systemctl disable --now openvpn-server@server.service
 				rm -f /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
-				rm -f /etc/sysctl.d/99-openvpn-forward.conf
+				rm -f /etc/sysctl.d/99-openvpn-forward.conf /etc/sysctl.d/99-openvpn-optimize.conf
 				if [[ "$os" = "debian" || "$os" = "ubuntu" ]]; then
 					(
 						set -x
