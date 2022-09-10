@@ -563,7 +563,7 @@ else
 	echo
 	echo "Select an option:"
 	echo "   1) Add a new client"
-	echo "   2) Export configuration for an existing client"
+	echo "   2) Export config for an existing client"
 	echo "   3) Revoke an existing client"
 	echo "   4) Remove OpenVPN"
 	echo "   5) Exit"
@@ -646,6 +646,8 @@ else
 				read -p "Confirm $client revocation? [y/N]: " revoke
 			done
 			if [[ "$revoke" =~ ^[yY]$ ]]; then
+				echo
+				echo "Revoking $client..."
 				cd /etc/openvpn/server/easy-rsa/
 				(
 					set -x
@@ -656,6 +658,12 @@ else
 				cp /etc/openvpn/server/easy-rsa/pki/crl.pem /etc/openvpn/server/crl.pem
 				# CRL is read with each client connection, when OpenVPN is dropped to nobody
 				chown nobody:"$group_name" /etc/openvpn/server/crl.pem
+				get_export_dir
+				ovpn_file="$export_dir$client.ovpn"
+				if [ -f "$ovpn_file" ]; then
+					echo "Removing $ovpn_file..."
+					rm -f "$ovpn_file"
+				fi
 				echo
 				echo "$client revoked!"
 			else
