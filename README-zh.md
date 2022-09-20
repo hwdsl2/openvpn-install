@@ -72,6 +72,7 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 - 改进了脚本的可靠性，用户输入和输出
 - 增加了对 Amazon Linux 2 的支持
 - 支持导出现有 VPN 客户端的配置
+- 支持为 VPN 客户端自定义 DNS 服务器
 - 优化 `sysctl` 设置以提高 VPN 性能
 - 使用 `sudo` 时改进了客户端配置文件的创建
 

@@ -72,6 +72,7 @@ List of enhancements over Nyr/openvpn-install.
 - Improved script reliability, user input and output
 - Added support for Amazon Linux 2
 - Supports exporting configuration for an existing VPN client
+- Supports custom DNS server(s) for VPN clients
 - Optimized `sysctl` settings for improved VPN performance
 - Improved creation of client config files when using `sudo`
 
