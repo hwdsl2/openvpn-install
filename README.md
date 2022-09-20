@@ -6,6 +6,8 @@ OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fed
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/) is an open-source, robust and highly flexible VPN protocol.
 
+A video tutorial in Spanish is available: [Install OpenVPN/WireGuard on Ubuntu 20.04](https://www.youtube.com/watch?v=99qtaJU2E2k).
+
 [**&raquo; See also: WireGuard VPN Server Auto Setup Script**](https://github.com/hwdsl2/wireguard-install)
 
 ## Installation
@@ -29,10 +31,11 @@ curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
 sudo bash openvpn.sh
 ```
 
-Alternative setup URL:
+Alternative setup URLs:
 
 ```bash
 https://github.com/hwdsl2/openvpn-install/raw/master/openvpn-install.sh
+https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 ```
 
 If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), then click the `Raw` button on the right. Press `Ctrl/Cmd+A` to select all, `Ctrl/Cmd+C` to copy, then paste into your favorite editor.
@@ -59,6 +62,21 @@ Like this project? You can show your support or appreciation.
 ## Credits
 
 This script is based on the great work of [Nyr and contributors](https://github.com/Nyr/openvpn-install), with enhancements and changes for compatibility with the [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) project.
+
+<details>
+<summary>
+List of enhancements over Nyr/openvpn-install.
+</summary>
+
+- Improved compatibility with Setup IPsec VPN
+- Improved script reliability, user input and output
+- Added support for Amazon Linux 2
+- Supports exporting configuration for an existing VPN client
+- Optimized `sysctl` settings for improved VPN performance
+- Improved creation of client config files when using `sudo`
+
+...and more!
+</details>
 
 ## License
 
