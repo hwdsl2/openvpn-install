@@ -105,6 +105,11 @@ TUN needs to be enabled before running this installer."
 	exit 1
 fi
 
+check_ip() {
+	IP_REGEX='^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
+	printf '%s' "$1" | tr -d '\n' | grep -Eq "$IP_REGEX"
+}
+
 abort_and_exit () {
 	echo "Abort. No changes were made." >&2
 	exit 1
@@ -275,16 +280,29 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 	echo
 	echo "Select a DNS server for the clients:"
 	echo "   1) Current system resolvers"
-	echo "   2) Google"
-	echo "   3) 1.1.1.1"
+	echo "   2) Google Public DNS"
+	echo "   3) Cloudflare DNS"
 	echo "   4) OpenDNS"
 	echo "   5) Quad9"
-	echo "   6) AdGuard"
-	read -p "DNS server [1]: " dns
-	until [[ -z "$dns" || "$dns" =~ ^[1-6]$ ]]; do
+	echo "   6) AdGuard DNS"
+	echo "   7) Custom"
+	read -p "DNS server [2]: " dns
+	until [[ -z "$dns" || "$dns" =~ ^[1-7]$ ]]; do
 		echo "$dns: invalid selection."
-		read -p "DNS server [1]: " dns
+		read -p "DNS server [2]: " dns
 	done
+	if [ "$dns" = "7" ]; then
+		read -rp "Enter primary DNS server: " dns1
+		until check_ip "$dns1"; do
+			echo "Invalid DNS server."
+			read -rp "Enter primary DNS server: " dns1
+		done
+		read -rp "Enter secondary DNS server (Enter to skip): " dns2
+		until [ -z "$dns2" ] || check_ip "$dns2"; do
+			echo "Invalid DNS server."
+			read -rp "Enter secondary DNS server (Enter to skip): " dns2
+		done
+	fi
 	echo
 	echo "Enter a name for the first client:"
 	read -p "Name [client]: " unsanitized_client
@@ -409,7 +427,7 @@ server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
 	echo 'ifconfig-pool-persist ipp.txt' >> /etc/openvpn/server/server.conf
 	# DNS
 	case "$dns" in
-		1|"")
+		1)
 			# Locate the proper resolv.conf
 			# Needed for systems running systemd-resolved
 			if grep '^nameserver' "/etc/resolv.conf" | grep -qv '127.0.0.53' ; then
@@ -422,7 +440,7 @@ server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
 				echo "push \"dhcp-option DNS $line\"" >> /etc/openvpn/server/server.conf
 			done
 		;;
-		2)
+		2|"")
 			echo 'push "dhcp-option DNS 8.8.8.8"' >> /etc/openvpn/server/server.conf
 			echo 'push "dhcp-option DNS 8.8.4.4"' >> /etc/openvpn/server/server.conf
 		;;
@@ -441,6 +459,12 @@ server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
 		6)
 			echo 'push "dhcp-option DNS 94.140.14.14"' >> /etc/openvpn/server/server.conf
 			echo 'push "dhcp-option DNS 94.140.15.15"' >> /etc/openvpn/server/server.conf
+		;;
+		7)
+			echo "push \"dhcp-option DNS $dns1\"" >> /etc/openvpn/server/server.conf
+			if [ -n "$dns2" ]; then
+				echo "push \"dhcp-option DNS $dns2\"" >> /etc/openvpn/server/server.conf
+			fi
 		;;
 	esac
 	echo "keepalive 10 120
