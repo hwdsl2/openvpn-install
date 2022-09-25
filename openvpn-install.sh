@@ -184,7 +184,7 @@ new_client () {
 	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/server/tc.key
 	echo "</tls-crypt>"
 	} > "$export_dir$client".ovpn
-	if [ "$export_to_home_dir" = "1" ]; then
+	if [ "$export_to_home_dir" = 1 ]; then
 		chown "$SUDO_USER:$SUDO_USER" "$export_dir$client".ovpn
 	fi
 	chmod 600 "$export_dir$client".ovpn
@@ -248,7 +248,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		fi
 	fi
 	# If $ip is a private IP address, the server must be behind NAT
-	if echo "$ip" | grep -qE '^(10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.|192\.168)'; then
+	if printf '%s' "$ip" | grep -qE '^(10|127|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168|169\.254)\.'; then
 		find_public_ip
 		if [ -z "$get_public_ip" ]; then
 			echo
@@ -319,7 +319,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		echo "$dns: invalid selection."
 		read -rp "DNS server [2]: " dns
 	done
-	if [ "$dns" = "7" ]; then
+	if [ "$dns" = 7 ]; then
 		read -rp "Enter primary DNS server: " dns1
 		until check_ip "$dns1"; do
 			echo "Invalid DNS server."
@@ -400,7 +400,11 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 	# Get easy-rsa
 	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.0/EasyRSA-3.1.0.tgz'
 	mkdir -p /etc/openvpn/server/easy-rsa/
-	{ wget -qO- "$easy_rsa_url" 2>/dev/null || curl -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
+	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
+	if [ ! -f /etc/openvpn/server/easy-rsa/easyrsa ]; then
+		echo "Error: Failed to download EasyRSA from $easy_rsa_url."
+		exit 1
+	fi
 	chown -R root:root /etc/openvpn/server/easy-rsa/
 	cd /etc/openvpn/server/easy-rsa/
 	(
