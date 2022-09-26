@@ -623,11 +623,12 @@ else
 	echo "Select an option:"
 	echo "   1) Add a new client"
 	echo "   2) Export config for an existing client"
-	echo "   3) Revoke an existing client"
-	echo "   4) Remove OpenVPN"
-	echo "   5) Exit"
+	echo "   3) List existing clients"
+	echo "   4) Revoke an existing client"
+	echo "   5) Remove OpenVPN"
+	echo "   6) Exit"
 	read -rp "Option: " option
-	until [[ "$option" =~ ^[1-5]$ ]]; do
+	until [[ "$option" =~ ^[1-6]$ ]]; do
 		echo "$option: invalid selection."
 		read -rp "Option: " option
 	done
@@ -679,8 +680,18 @@ else
 			exit
 		;;
 		3)
-			# This option could be documented a bit better and maybe even be simplified
-			# ...but what can I say, I want some sleep too
+			echo
+			echo "Checking for existing client(s)..."
+			number_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
+			if [[ "$number_of_clients" = 0 ]]; then
+				echo
+				echo "There are no existing clients!"
+				exit
+			fi
+			echo
+			tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2
+		;;
+		4)
 			number_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
 			if [[ "$number_of_clients" = 0 ]]; then
 				echo
@@ -731,7 +742,7 @@ else
 			fi
 			exit
 		;;
-		4)
+		5)
 			echo
 			read -rp "Confirm OpenVPN removal? [y/N]: " remove
 			until [[ "$remove" =~ ^[yYnN]*$ ]]; do
@@ -796,7 +807,7 @@ else
 			fi
 			exit
 		;;
-		5)
+		6)
 			exit
 		;;
 	esac
