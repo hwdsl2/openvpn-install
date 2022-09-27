@@ -247,7 +247,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 			fi
 		fi
 	fi
-	# If $ip is a private IP address, the server must be behind NAT
+	# If $ip is a private IP address, the server must be behind NAT
 	if printf '%s' "$ip" | grep -qE '^(10|127|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168|169\.254)\.'; then
 		find_public_ip
 		if [ -z "$get_public_ip" ]; then
@@ -297,6 +297,14 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		protocol=tcp
 		;;
 	esac
+	echo
+	echo "Which network range should OpenVPN use?"
+	read -rp "Network Range [10.8.0.0]: " network_range
+	until [[ -z "$network_range" || "$network_range" =~ ^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$ && ${network_range: -1} -eq 0 ]]; do
+		echo "$network_range: invalid network range or format."
+		read -rp "Network Range [10.8.0.0]: " network_range
+	done
+	[[ -z "$network_range" ]] && network_range="10.8.0.0"
 	echo
 	echo "What port should OpenVPN listen to?"
 	read -rp "Port [1194]: " port
@@ -448,7 +456,7 @@ dh dh.pem
 auth SHA512
 tls-crypt tc.key
 topology subnet
-server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
+server $network_range 255.255.255.0" > /etc/openvpn/server/server.conf
 	# IPv6
 	if [[ -z "$ip6" ]]; then
 		echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server/server.conf
@@ -517,12 +525,12 @@ crl-verify crl.pem" >> /etc/openvpn/server/server.conf
 		# We don't use --add-service=openvpn because that would only work with
 		# the default port and protocol.
 		firewall-cmd -q --add-port="$port"/"$protocol"
-		firewall-cmd -q --zone=trusted --add-source=10.8.0.0/24
+		firewall-cmd -q --zone=trusted --add-source=$network_range/24
 		firewall-cmd -q --permanent --add-port="$port"/"$protocol"
-		firewall-cmd -q --permanent --zone=trusted --add-source=10.8.0.0/24
+		firewall-cmd -q --permanent --zone=trusted --add-source=$network_range/24
 		# Set NAT for the VPN subnet
-		firewall-cmd -q --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
-		firewall-cmd -q --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
+		firewall-cmd -q --direct --add-rule ipv4 nat POSTROUTING 0 -s $network_range/24 ! -d $network_range/24 -j SNAT --to "$ip"
+		firewall-cmd -q --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s $network_range/24 ! -d $network_range/24 -j SNAT --to "$ip"
 		if [[ -n "$ip6" ]]; then
 			firewall-cmd -q --zone=trusted --add-source=fddd:1194:1194:1194::/64
 			firewall-cmd -q --permanent --zone=trusted --add-source=fddd:1194:1194:1194::/64
@@ -543,13 +551,13 @@ crl-verify crl.pem" >> /etc/openvpn/server/server.conf
 Before=network.target
 [Service]
 Type=oneshot
-ExecStart=$iptables_path -t nat -A POSTROUTING -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to $ip
+ExecStart=$iptables_path -t nat -A POSTROUTING -s $network_range/24 ! -d $network_range/24 -j SNAT --to $ip
 ExecStart=$iptables_path -I INPUT -p $protocol --dport $port -j ACCEPT
-ExecStart=$iptables_path -I FORWARD -s 10.8.0.0/24 -j ACCEPT
+ExecStart=$iptables_path -I FORWARD -s $network_range/24 -j ACCEPT
 ExecStart=$iptables_path -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-ExecStop=$iptables_path -t nat -D POSTROUTING -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to $ip
+ExecStop=$iptables_path -t nat -D POSTROUTING -s $network_range/24 ! -d $network_range/24 -j SNAT --to $ip
 ExecStop=$iptables_path -D INPUT -p $protocol --dport $port -j ACCEPT
-ExecStop=$iptables_path -D FORWARD -s 10.8.0.0/24 -j ACCEPT
+ExecStop=$iptables_path -D FORWARD -s $network_range/24 -j ACCEPT
 ExecStop=$iptables_path -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" > /etc/systemd/system/openvpn-iptables.service
 		if [[ -n "$ip6" ]]; then
 			echo "ExecStart=$ip6tables_path -t nat -A POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to $ip6
@@ -760,14 +768,14 @@ else
 				port=$(grep '^port ' /etc/openvpn/server/server.conf | cut -d " " -f 2)
 				protocol=$(grep '^proto ' /etc/openvpn/server/server.conf | cut -d " " -f 2)
 				if systemctl is-active --quiet firewalld.service; then
-					ip=$(firewall-cmd --direct --get-rules ipv4 nat POSTROUTING | grep '\-s 10.8.0.0/24 '"'"'!'"'"' -d 10.8.0.0/24' | grep -oE '[^ ]+$')
+					ip=$(firewall-cmd --direct --get-rules ipv4 nat POSTROUTING | grep '\-s $network_range/24 '"'"'!'"'"' -d $network_range/24' | grep -oE '[^ ]+$')
 					# Using both permanent and not permanent rules to avoid a firewalld reload.
 					firewall-cmd -q --remove-port="$port"/"$protocol"
-					firewall-cmd -q --zone=trusted --remove-source=10.8.0.0/24
+					firewall-cmd -q --zone=trusted --remove-source=$network_range/24
 					firewall-cmd -q --permanent --remove-port="$port"/"$protocol"
-					firewall-cmd -q --permanent --zone=trusted --remove-source=10.8.0.0/24
-					firewall-cmd -q --direct --remove-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
-					firewall-cmd -q --permanent --direct --remove-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
+					firewall-cmd -q --permanent --zone=trusted --remove-source=$network_range/24
+					firewall-cmd -q --direct --remove-rule ipv4 nat POSTROUTING 0 -s $network_range/24 ! -d $network_range/24 -j SNAT --to "$ip"
+					firewall-cmd -q --permanent --direct --remove-rule ipv4 nat POSTROUTING 0 -s $network_range/24 ! -d $network_range/24 -j SNAT --to "$ip"
 					if grep -qs "server-ipv6" /etc/openvpn/server/server.conf; then
 						ip6=$(firewall-cmd --direct --get-rules ipv6 nat POSTROUTING | grep '\-s fddd:1194:1194:1194::/64 '"'"'!'"'"' -d fddd:1194:1194:1194::/64' | grep -oE '[^ ]+$')
 						firewall-cmd -q --zone=trusted --remove-source=fddd:1194:1194:1194::/64
@@ -816,4 +824,4 @@ else
 			exit
 		;;
 	esac
-fi
+f
