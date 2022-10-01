@@ -12,7 +12,16 @@
 
 ## 安装说明
 
-在你的 Linux 服务器\* 上运行脚本，并按提示操作：
+在你的 Linux 服务器\* 上运行脚本，并按提示操作。
+
+**选项 1:** 使用默认选项自动安装。
+
+```bash
+wget https://get.vpnsetup.net/ovpn -O openvpn.sh
+sudo bash openvpn.sh --auto
+```
+
+**选项 2:** 使用自定义选项进行交互式安装。
 
 ```bash
 wget https://get.vpnsetup.net/ovpn -O openvpn.sh
@@ -27,7 +36,11 @@ sudo bash openvpn.sh
 你也可以使用 `curl` 下载：
 
 ```bash
+# 下载脚本
 curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
+# 选项 1: 使用默认选项自动安装
+sudo bash openvpn.sh --auto
+# 选项 2: 使用自定义选项进行交互式安装
 sudo bash openvpn.sh
 ```
 
@@ -72,6 +85,7 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 
 - 改进了与 Setup IPsec VPN 的兼容性
 - 改进了脚本的可靠性，用户输入和输出
+- 支持使用默认选项自动安装
 - 增加了对 Amazon Linux 2 的支持
 - 支持导出现有 VPN 客户端的配置
 - 支持列出现有的 VPN 客户端
