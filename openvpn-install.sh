@@ -137,9 +137,6 @@ if readlink /proc/$$/exe | grep -q "dash"; then
 	exit 1
 fi
 
-# Discard stdin. Needed when running from an one-liner which includes a newline
-read -N 999999 -t 0.001
-
 # Detect OpenVZ 6
 if [[ $(uname -r | cut -d "." -f 1) -eq 2 ]]; then
 	echo "The system is running an old kernel, which is incompatible with this installer."
@@ -490,7 +487,7 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 		exit 1
 	fi
 	chown -R root:root /etc/openvpn/server/easy-rsa/
-	cd /etc/openvpn/server/easy-rsa/
+	cd /etc/openvpn/server/easy-rsa/ || exit 1
 	(
 		set -x
 		# Create the PKI, set up the CA and the server and client certificates
@@ -729,7 +726,7 @@ else
 				[ -z "$unsanitized_client" ] && abort_and_exit
 				client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
 			done
-			cd /etc/openvpn/server/easy-rsa/
+			cd /etc/openvpn/server/easy-rsa/ || exit 1
 			(
 				set -x
 				EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass >/dev/null 2>&1
@@ -807,7 +804,7 @@ else
 			if [[ "$revoke" =~ ^[yY]$ ]]; then
 				echo
 				echo "Revoking $client..."
-				cd /etc/openvpn/server/easy-rsa/
+				cd /etc/openvpn/server/easy-rsa/ || exit 1
 				(
 					set -x
 					./easyrsa --batch revoke "$client" >/dev/null 2>&1
