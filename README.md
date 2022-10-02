@@ -6,7 +6,7 @@ OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fed
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/) is an open-source, robust and highly flexible VPN protocol.
 
-A video tutorial in Spanish is available: [Install OpenVPN/WireGuard on Ubuntu 20.04](https://www.youtube.com/watch?v=99qtaJU2E2k).
+Video tutorial (Spanish): [Install OpenVPN/WireGuard on Ubuntu 20.04](https://www.youtube.com/watch?v=99qtaJU2E2k).
 
 [**&raquo; See also: WireGuard VPN Server Auto Setup Script**](https://github.com/hwdsl2/wireguard-install)
 
@@ -14,7 +14,7 @@ A video tutorial in Spanish is available: [Install OpenVPN/WireGuard on Ubuntu 2
 
 Run the script on your Linux server\* and follow the prompts.
 
-**Option 1:** Auto install using default options.
+**Option 1:** Auto install OpenVPN using default options.
 
 ```bash
 wget https://get.vpnsetup.net/ovpn -O openvpn.sh
@@ -38,7 +38,7 @@ You may also use `curl` to download:
 ```bash
 # Download the script
 curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
-# Option 1: Auto install using default options
+# Option 1: Auto install OpenVPN using default options
 sudo bash openvpn.sh --auto
 # Option 2: Interactive install using custom options
 sudo bash openvpn.sh

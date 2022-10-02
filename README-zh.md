@@ -14,7 +14,7 @@
 
 在你的 Linux 服务器\* 上运行脚本，并按提示操作。
 
-**选项 1:** 使用默认选项自动安装。
+**选项 1:** 使用默认选项自动安装 OpenVPN。
 
 ```bash
 wget https://get.vpnsetup.net/ovpn -O openvpn.sh
@@ -38,7 +38,7 @@ sudo bash openvpn.sh
 ```bash
 # 下载脚本
 curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
-# 选项 1: 使用默认选项自动安装
+# 选项 1: 使用默认选项自动安装 OpenVPN
 sudo bash openvpn.sh --auto
 # 选项 2: 使用自定义选项进行交互式安装
 sudo bash openvpn.sh
