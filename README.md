@@ -17,14 +17,29 @@ Run the script on your Linux server\* and follow the prompts.
 **Option 1:** Auto install OpenVPN using default options.
 
 ```bash
-wget https://get.vpnsetup.net/ovpn -O openvpn.sh
+wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 sudo bash openvpn.sh --auto
 ```
+
+<details>
+<summary>
+List of default options.
+</summary>
+
+```
+Protocol: UDP
+Port: UDP/1194
+Client name: client
+Client DNS: Google Public DNS
+```
+</details>
+
+For servers with an external firewall (e.g. [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/vpc/docs/firewalls)), open UDP port 1194 for the VPN.
 
 **Option 2:** Interactive install using custom options.
 
 ```bash
-wget https://get.vpnsetup.net/ovpn -O openvpn.sh
+wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 sudo bash openvpn.sh
 ```
 
@@ -37,7 +52,7 @@ You may also use `curl` to download:
 
 ```bash
 # Download the script
-curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
+curl -fL -o openvpn.sh https://get.vpnsetup.net/ovpn
 # Option 1: Auto install OpenVPN using default options
 sudo bash openvpn.sh --auto
 # Option 2: Interactive install using custom options
@@ -60,7 +75,9 @@ If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), th
 
 After setup, you can run the script again to manage users or uninstall OpenVPN.
 
-[OpenVPN clients](https://openvpn.net/vpn-client/) are available for Windows, macOS, iOS, Android and Linux. macOS users can also use [Tunnelblick](https://tunnelblick.net). To add a VPN connection, first securely transfer the generated `.ovpn` file to your device, then open the OpenVPN App and import the VPN profile.
+Get your computer or device to use the VPN. Please refer to:
+
+**[Configure OpenVPN Clients](docs/clients.md)**
 
 Enjoy your very own VPN! :sparkles::tada::rocket::sparkles:
 

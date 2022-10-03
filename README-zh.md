@@ -17,14 +17,29 @@
 **选项 1:** 使用默认选项自动安装 OpenVPN。
 
 ```bash
-wget https://get.vpnsetup.net/ovpn -O openvpn.sh
+wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 sudo bash openvpn.sh --auto
 ```
+
+<details>
+<summary>
+默认选项列表。
+</summary>
+
+```
+网络协议: UDP
+端口: UDP/1194
+客户端名称: client
+客户端 DNS: Google Public DNS
+```
+</details>
+
+对于有外部防火墙的服务器（比如 [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/vpc/docs/firewalls)），请为 VPN 打开 UDP 端口 1194。
 
 **选项 2:** 使用自定义选项进行交互式安装。
 
 ```bash
-wget https://get.vpnsetup.net/ovpn -O openvpn.sh
+wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 sudo bash openvpn.sh
 ```
 
@@ -37,7 +52,7 @@ sudo bash openvpn.sh
 
 ```bash
 # 下载脚本
-curl -fL https://get.vpnsetup.net/ovpn -o openvpn.sh
+curl -fL -o openvpn.sh https://get.vpnsetup.net/ovpn
 # 选项 1: 使用默认选项自动安装 OpenVPN
 sudo bash openvpn.sh --auto
 # 选项 2: 使用自定义选项进行交互式安装
@@ -60,7 +75,9 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 
 安装完成后，你可以再次运行脚本来管理用户或者卸载 OpenVPN。
 
-[OpenVPN 客户端](https://openvpn.net/vpn-client/) 在 Windows, macOS, iOS, Android 和 Linux 上可用。macOS 用户也可以使用 [Tunnelblick](https://tunnelblick.net)。要添加 VPN 连接，首先将生成的 `.ovpn` 文件安全地传送到你的设备，然后打开 OpenVPN 应用程序并导入 VPN 配置文件。
+配置你的计算机或其它设备使用 VPN。请参见：
+
+**[配置 OpenVPN 客户端](docs/clients-zh.md)**
 
 开始使用自己的专属 VPN! :sparkles::tada::rocket::sparkles:
 
