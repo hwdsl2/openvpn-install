@@ -112,10 +112,28 @@ new_client() {
 	chmod 600 "$export_dir$client".ovpn
 }
 
+show_header() {
+cat <<'EOF'
+
+OpenVPN Script  3 Oct 2022
+https://github.com/hwdsl2/openvpn-install
+EOF
+}
+
+show_header2() {
+cat <<'EOF'
+
+Copyright (c) 2022 Lin Song
+Copyright (c) 2013-2022 Nyr
+EOF
+}
+
 show_usage() {
 	if [ -n "$1" ]; then
 		echo "Error: $1" >&2
 	fi
+	show_header
+	show_header2
 cat 1>&2 <<EOF
 
 Usage: bash $0 [options]
@@ -245,10 +263,12 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 	if [ "$auto" = 0 ]; then
 		echo
 		echo 'Welcome to this OpenVPN server installer!'
+		echo 'GitHub: https://github.com/hwdsl2/openvpn-install'
 		echo
 		echo 'I need to ask you a few questions before starting setup.'
 		echo 'You can use the default options and just press enter if you are OK with them.'
 	else
+		show_header
 		echo
 		echo 'Starting OpenVPN setup using default options.'
 	fi
@@ -698,6 +718,7 @@ verb 3" > /etc/openvpn/server/client-common.txt
 	echo "The client configuration is available in: $export_dir$client.ovpn"
 	echo "New clients can be added by running this script again."
 else
+	show_header
 	echo
 	echo "OpenVPN is already installed."
 	echo
