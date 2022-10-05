@@ -115,7 +115,7 @@ new_client() {
 show_header() {
 cat <<'EOF'
 
-OpenVPN Script  3 Oct 2022
+OpenVPN Script
 https://github.com/hwdsl2/openvpn-install
 EOF
 }
@@ -260,6 +260,25 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 			apt-get -yqq install wget >/dev/null
 		) || exit 1
 	fi
+	if ! hash ip 2>/dev/null; then
+		if [ "$auto" = 0 ]; then
+			echo "iproute is required to use this installer."
+			read -n1 -r -p "Press any key to install iproute and continue..."
+		fi
+		if [ "$os" = "debian" ] || [ "$os" = "ubuntu" ]; then
+			export DEBIAN_FRONTEND=noninteractive
+			(
+				set -x
+				apt-get -yqq update || apt-get -yqq update
+				apt-get -yqq install iproute2 >/dev/null
+			) || exit 1
+		else
+			(
+				set -x
+				yum -y -q install iproute >/dev/null
+			) || exit 1
+		fi
+	fi
 	if [ "$auto" = 0 ]; then
 		echo
 		echo 'Welcome to this OpenVPN server installer!'
@@ -308,6 +327,11 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 				ip=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}' | sed -n "$ip_number"p)
 			fi
 		fi
+	fi
+	if ! check_ip "$ip"; then
+		echo "Error: Could not detect this server's IP address." >&2
+		echo "Abort. No changes were made." >&2
+		exit 1
 	fi
 	# If $ip is a private IP address, the server must be behind NAT
 	if printf '%s' "$ip" | grep -qE '^(10|127|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168|169\.254)\.'; then
