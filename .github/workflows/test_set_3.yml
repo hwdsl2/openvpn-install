@@ -38,3 +38,66 @@ jobs:
           sudo netstat -anpu | grep openvpn
           sudo systemctl status openvpn-server@server
           ls -ld ~/client.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+          1
+          client2
+          ANSWERS
+
+          ls -ld ~/client2.ovpn
+          rm -f ~/client2.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+          2
+          2
+          ANSWERS
+
+          ls -ld ~/client2.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+          3
+          ANSWERS
+
+          sudo bash openvpn.sh <<ANSWERS | grep -i "2 clients"
+          3
+          ANSWERS
+
+          sudo bash openvpn.sh <<ANSWERS
+          4
+          2
+          y
+          ANSWERS
+
+          ls -ld ~/client2.ovpn && exit 1
+
+          sudo bash openvpn.sh <<ANSWERS | grep -i "1 client"
+          3
+          ANSWERS
+
+          sudo bash openvpn.sh <<ANSWERS
+          5
+          y
+          ANSWERS
+
+          sudo netstat -anpu | grep openvpn && exit 1
+          rm -f ~/client*.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+
+
+
+
+
+          ANSWERS
+
+          sudo netstat -anpu | grep openvpn
+          sudo systemctl status openvpn-server@server
+          ls -ld ~/client.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+          5
+          y
+          ANSWERS
+
+          sudo netstat -anpu | grep openvpn && exit 1
+          rm -f ~/client*.ovpn

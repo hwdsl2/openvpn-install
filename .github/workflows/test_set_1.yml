@@ -42,7 +42,7 @@ jobs:
 
           cd /opt/src
           yum -y -q update
-          yum -y -q install wget rsyslog kmod procps-ng iproute net-tools
+          yum -y -q install wget rsyslog kmod procps-ng net-tools
           systemctl start rsyslog
 
           cp -f /opt/src/scripts/openvpn-install.sh ./openvpn.sh
@@ -52,6 +52,69 @@ jobs:
           netstat -anpu | grep openvpn
           systemctl status openvpn-server@server
           ls -ld ~/client.ovpn
+
+          bash openvpn.sh <<ANSWERS
+          1
+          client2
+          ANSWERS
+
+          ls -ld ~/client2.ovpn
+          rm -f ~/client2.ovpn
+
+          bash openvpn.sh <<ANSWERS
+          2
+          2
+          ANSWERS
+
+          ls -ld ~/client2.ovpn
+
+          bash openvpn.sh <<ANSWERS
+          3
+          ANSWERS
+
+          bash openvpn.sh <<ANSWERS | grep -i "2 clients"
+          3
+          ANSWERS
+
+          bash openvpn.sh <<ANSWERS
+          4
+          2
+          y
+          ANSWERS
+
+          ls -ld ~/client2.ovpn && exit 1
+
+          bash openvpn.sh <<ANSWERS | grep -i "1 client"
+          3
+          ANSWERS
+
+          bash openvpn.sh <<ANSWERS
+          5
+          y
+          ANSWERS
+
+          netstat -anpu | grep openvpn && exit 1
+          rm -f ~/client*.ovpn
+
+          bash openvpn.sh <<ANSWERS
+
+
+
+
+
+          ANSWERS
+
+          netstat -anpu | grep openvpn
+          systemctl status openvpn-server@server
+          ls -ld ~/client.ovpn
+
+          bash openvpn.sh <<ANSWERS
+          5
+          y
+          ANSWERS
+
+          netstat -anpu | grep openvpn && exit 1
+          rm -f ~/client*.ovpn
 
           exit 0
           EOF
