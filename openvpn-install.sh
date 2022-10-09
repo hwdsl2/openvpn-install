@@ -8,24 +8,12 @@
 # Copyright (c) 2022 Lin Song <linsongui@gmail.com>
 # Copyright (c) 2013-2022 Nyr
 #
-# Released under the MIT License.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-# the Software, and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# Released under the MIT License, see the accompanying file LICENSE.txt
+# or https://opensource.org/licenses/MIT
+
+exiterr()  { echo "Error: $1" >&2; exit 1; }
+exiterr2() { exiterr "'apt-get install' failed."; }
+exiterr3() { exiterr "'yum install' failed."; }
 
 check_ip() {
 	IP_REGEX='^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
@@ -149,16 +137,20 @@ EOF
 
 ovpnsetup() {
 
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+if [ "$(id -u)" != 0 ]; then
+	exiterr "This installer must be run as root. Try 'sudo bash $0'"
+fi
+
 # Detect Debian users running the script with "sh" instead of bash
 if readlink /proc/$$/exe | grep -q "dash"; then
-	echo 'This installer needs to be run with "bash", not "sh".'
-	exit 1
+	exiterr 'This installer needs to be run with "bash", not "sh".'
 fi
 
 # Detect OpenVZ 6
 if [[ $(uname -r | cut -d "." -f 1) -eq 2 ]]; then
-	echo "The system is running an old kernel, which is incompatible with this installer."
-	exit 1
+	exiterr "The system is running an old kernel, which is incompatible with this installer."
 fi
 
 # Detect OS
@@ -184,44 +176,28 @@ elif [[ -e /etc/fedora-release ]]; then
 	os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
 	group_name="nobody"
 else
-	echo "This installer seems to be running on an unsupported distribution.
+	exiterr "This installer seems to be running on an unsupported distribution.
 Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora and Amazon Linux 2."
-	exit 1
 fi
 
 if [[ "$os" == "ubuntu" && "$os_version" -lt 1804 ]]; then
-	echo "Ubuntu 18.04 or higher is required to use this installer.
+	exiterr "Ubuntu 18.04 or higher is required to use this installer.
 This version of Ubuntu is too old and unsupported."
-	exit 1
 fi
 
 if [[ "$os" == "debian" && "$os_version" -lt 9 ]]; then
-	echo "Debian 9 or higher is required to use this installer.
+	exiterr "Debian 9 or higher is required to use this installer.
 This version of Debian is too old and unsupported."
-	exit 1
 fi
 
 if [[ "$os" == "centos" && "$os_version" -lt 7 ]]; then
-	echo "CentOS 7 or higher is required to use this installer.
+	exiterr "CentOS 7 or higher is required to use this installer.
 This version of CentOS is too old and unsupported."
-	exit 1
-fi
-
-# Detect environments where $PATH does not include the sbin directories
-if ! grep -q sbin <<< "$PATH"; then
-	echo '$PATH does not include sbin. Try using "su -" instead of "su".'
-	exit 1
-fi
-
-if [ "$(id -u)" != 0 ]; then
-	echo "This installer must be run as root. Try 'sudo bash $0'"
-	exit 1
 fi
 
 if [[ ! -e /dev/net/tun ]] || ! ( exec 7<>/dev/net/tun ) 2>/dev/null; then
-	echo "The system does not have the TUN device available.
+	exiterr "The system does not have the TUN device available.
 TUN needs to be enabled before running this installer."
-	exit 1
 fi
 
 auto=0
@@ -229,8 +205,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 	if [ "$os" = "centos" ]; then
 		if grep -qs "hwdsl2 VPN script" /etc/sysconfig/nftables.conf \
 			|| systemctl is-active --quiet nftables 2>/dev/null; then
-			echo "This system has nftables enabled, which is not supported by this installer."
-			exit 1
+			exiterr "This system has nftables enabled, which is not supported by this installer."
 		fi
 	fi
 	while [ "$#" -gt 0 ]; do
@@ -258,7 +233,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 			set -x
 			apt-get -yqq update || apt-get -yqq update
 			apt-get -yqq install wget >/dev/null
-		) || exit 1
+		) || exiterr2
 	fi
 	if ! hash ip 2>/dev/null; then
 		if [ "$auto" = 0 ]; then
@@ -271,12 +246,12 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 				set -x
 				apt-get -yqq update || apt-get -yqq update
 				apt-get -yqq install iproute2 >/dev/null
-			) || exit 1
+			) || exiterr2
 		else
 			(
 				set -x
 				yum -y -q install iproute >/dev/null
-			) || exit 1
+			) || exiterr3
 		fi
 	fi
 	if [ "$auto" = 0 ]; then
@@ -491,7 +466,7 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 			set -x
 			apt-get -yqq update || apt-get -yqq update
 			apt-get -yqq install openvpn openssl ca-certificates $firewall >/dev/null
-		) || exit 1
+		) || exiterr2
 	elif [[ "$os" = "centos" ]]; then
 		if grep -qs "Amazon Linux release 2" /etc/system-release; then
 			(
@@ -502,18 +477,18 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 			(
 				set -x
 				yum -y -q install epel-release >/dev/null
-			) || exit 1
+			) || exiterr3
 		fi
 		(
 			set -x
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
-		) || exit 1
+		) || exiterr3
 	else
 		# Else, OS must be Fedora
 		(
 			set -x
 			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
-		) || exit 1
+		) || exiterr "'dnf install' failed."
 	fi
 	# If firewalld was just installed, enable it
 	if [[ "$firewall" == "firewalld" ]]; then
@@ -527,8 +502,7 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 	mkdir -p /etc/openvpn/server/easy-rsa/
 	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
 	if [ ! -f /etc/openvpn/server/easy-rsa/easyrsa ]; then
-		echo "Error: Failed to download EasyRSA from $easy_rsa_url."
-		exit 1
+		exiterr "Failed to download EasyRSA from $easy_rsa_url."
 	fi
 	chown -R root:root /etc/openvpn/server/easy-rsa/
 	cd /etc/openvpn/server/easy-rsa/ || exit 1
@@ -701,13 +675,13 @@ WantedBy=multi-user.target" >> /etc/systemd/system/openvpn-iptables.service
 				(
 					set -x
 					yum -y -q install policycoreutils-python >/dev/null
-				) || exit 1
+				) || exiterr3
 			else
 				# CentOS 8 or Fedora
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
-				) || exit 1
+				) || exiterr "'dnf install' failed."
 			fi
 		fi
 		semanage port -a -t openvpn_port_t -p "$protocol" "$port"
