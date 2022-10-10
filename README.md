@@ -1,4 +1,4 @@
-[English](README.md) | [中文](README-zh.md)
+[English](README.md) | [中文](README-zh.md) | [Vídeo en Español](https://www.youtube.com/watch?v=99qtaJU2E2k)
 
 # OpenVPN Server Auto Setup Script
 
@@ -8,18 +8,21 @@ OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fed
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/) is an open-source, robust and highly flexible VPN protocol.
 
-Video tutorial (Spanish): [Install OpenVPN/WireGuard on Ubuntu 20.04](https://www.youtube.com/watch?v=99qtaJU2E2k).
-
 [**&raquo; See also: WireGuard VPN Server Auto Setup Script**](https://github.com/hwdsl2/wireguard-install)
 
 ## Installation
 
 Run the script on your Linux server\* and follow the prompts.
 
-**Option 1:** Auto install OpenVPN using default options.
+First, download the script:
 
 ```bash
 wget -O openvpn.sh https://get.vpnsetup.net/ovpn
+```
+
+**Option 1:** Auto install OpenVPN using default options.
+
+```bash
 sudo bash openvpn.sh --auto
 ```
 
@@ -41,25 +44,21 @@ For servers with an external firewall (e.g. [EC2](https://docs.aws.amazon.com/AW
 **Option 2:** Interactive install using custom options.
 
 ```bash
-wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 sudo bash openvpn.sh
 ```
 
 <details>
 <summary>
-Alternative commands.
+Click here if you are unable to download.
 </summary>
 
 You may also use `curl` to download:
 
 ```bash
-# Download the script
 curl -fL -o openvpn.sh https://get.vpnsetup.net/ovpn
-# Option 1: Auto install OpenVPN using default options
-sudo bash openvpn.sh --auto
-# Option 2: Interactive install using custom options
-sudo bash openvpn.sh
 ```
+
+Then follow the instructions above to install.
 
 Alternative setup URLs:
 
