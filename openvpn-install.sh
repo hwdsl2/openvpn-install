@@ -598,6 +598,7 @@ server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
 			fi
 		;;
 	esac
+	echo 'push "block-outside-dns"' >> /etc/openvpn/server/server.conf
 	echo "keepalive 10 120
 cipher AES-256-CBC
 user nobody
@@ -701,7 +702,6 @@ remote-cert-tls server
 auth SHA512
 cipher AES-256-CBC
 ignore-unknown-option block-outside-dns
-block-outside-dns
 verb 3" > /etc/openvpn/server/client-common.txt
 	# Enable and start the OpenVPN service
 	(
