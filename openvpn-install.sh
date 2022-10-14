@@ -465,7 +465,11 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 		(
 			set -x
 			apt-get -yqq update || apt-get -yqq update
-			apt-get -yqq install openvpn openssl ca-certificates $firewall >/dev/null
+			apt-get -yqq --no-install-recommends install openvpn >/dev/null
+		) || exiterr2
+		(
+			set -x
+			apt-get -yqq install openssl ca-certificates $firewall >/dev/null
 		) || exiterr2
 	elif [[ "$os" = "centos" ]]; then
 		if grep -qs "Amazon Linux release 2" /etc/system-release; then
@@ -498,7 +502,7 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 		)
 	fi
 	# Get easy-rsa
-	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.0/EasyRSA-3.1.0.tgz'
+	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.1/EasyRSA-3.1.1.tgz'
 	mkdir -p /etc/openvpn/server/easy-rsa/
 	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
 	if [ ! -f /etc/openvpn/server/easy-rsa/easyrsa ]; then
@@ -509,11 +513,11 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 	(
 		set -x
 		# Create the PKI, set up the CA and the server and client certificates
-		./easyrsa init-pki >/dev/null
+		./easyrsa --batch init-pki >/dev/null
 		./easyrsa --batch build-ca nopass >/dev/null 2>&1
-		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-server-full server nopass >/dev/null 2>&1
-		EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass >/dev/null 2>&1
-		EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl >/dev/null 2>&1
+		./easyrsa --batch --days=3650 build-server-full server nopass >/dev/null 2>&1
+		./easyrsa --batch --days=3650 build-client-full "$client" nopass >/dev/null 2>&1
+		./easyrsa --batch --days=3650 gen-crl >/dev/null 2>&1
 	)
 	# Move the stuff we need
 	cp pki/ca.crt pki/private/ca.key pki/issued/server.crt pki/private/server.key pki/crl.pem /etc/openvpn/server
@@ -748,7 +752,7 @@ else
 			cd /etc/openvpn/server/easy-rsa/ || exit 1
 			(
 				set -x
-				EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full "$client" nopass >/dev/null 2>&1
+				./easyrsa --batch --days=3650 build-client-full "$client" nopass >/dev/null 2>&1
 			)
 			# Generates the custom client.ovpn
 			new_client
@@ -827,7 +831,7 @@ else
 				(
 					set -x
 					./easyrsa --batch revoke "$client" >/dev/null 2>&1
-					EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl >/dev/null 2>&1
+					./easyrsa --batch --days=3650 gen-crl >/dev/null 2>&1
 				)
 				rm -f /etc/openvpn/server/crl.pem
 				cp /etc/openvpn/server/easy-rsa/pki/crl.pem /etc/openvpn/server/crl.pem
