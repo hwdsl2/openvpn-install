@@ -8,23 +8,19 @@
 
 该脚本可让你在几分钟内建立自己的 VPN 服务器，即使你以前没有使用过 OpenVPN。[OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/) 是一种开源、强大且高度灵活的 VPN 协议。
 
-<details>
-<summary>
-查看脚本的示例输出（终端记录）。
-</summary>
-
-**注：** 此终端记录仅用于演示目的。该记录中的 VPN 凭据 **无效**。
-
-<p align="center"><img src="docs/images/demo1.svg"></p>
-</details>
-
 [**&raquo; 另见：WireGuard VPN 服务器一键安装脚本**](https://github.com/hwdsl2/wireguard-install/blob/master/README-zh.md)
+
+## 功能特性
+
+- 全自动的 OpenVPN 服务器配置，无需用户输入
+- 支持使用自定义选项进行交互式安装
+- 生成 VPN 配置文件以自动配置 Windows, macOS, iOS 和 Android 设备
+- 支持管理 OpenVPN 用户和证书
+- 优化 `sysctl` 设置以提高 VPN 性能
 
 ## 安装说明
 
-在你的 Linux 服务器\* 上运行脚本，并按提示操作。
-
-首先下载脚本：
+首先在你的 Linux 服务器\* 上下载脚本：
 
 ```bash
 wget -O openvpn.sh https://get.vpnsetup.net/ovpn
@@ -47,6 +43,15 @@ sudo bash openvpn.sh --auto
 客户端名称: client
 客户端 DNS: Google Public DNS
 ```
+</details>
+<details>
+<summary>
+查看脚本的示例输出（终端记录）。
+</summary>
+
+**注：** 此终端记录仅用于演示目的。该记录中的 VPN 凭据 **无效**。
+
+<p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
 
 对于有外部防火墙的服务器（比如 [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/vpc/docs/firewalls)），请为 VPN 打开 UDP 端口 1194。

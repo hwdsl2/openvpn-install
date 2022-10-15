@@ -8,23 +8,19 @@ OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fed
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/) is an open-source, robust and highly flexible VPN protocol.
 
-<details>
-<summary>
-See the script in action (terminal recording).
-</summary>
-
-**Note:** This recording is for demo purposes only. VPN credentials in this recording are **NOT** valid.
-
-<p align="center"><img src="docs/images/demo1.svg"></p>
-</details>
-
 [**&raquo; See also: WireGuard VPN Server Auto Setup Script**](https://github.com/hwdsl2/wireguard-install)
+
+## Features
+
+- Fully automated OpenVPN server setup, no user input needed
+- Supports interactive install using custom options
+- Generates VPN profiles to auto-configure Windows, macOS, iOS and Android devices
+- Supports managing OpenVPN users and certificates
+- Optimizes `sysctl` settings for improved VPN performance
 
 ## Installation
 
-Run the script on your Linux server\* and follow the prompts.
-
-First, download the script:
+First, download the script on your Linux server\*:
 
 ```bash
 wget -O openvpn.sh https://get.vpnsetup.net/ovpn
@@ -47,6 +43,15 @@ Port: UDP/1194
 Client name: client
 Client DNS: Google Public DNS
 ```
+</details>
+<details>
+<summary>
+See the script in action (terminal recording).
+</summary>
+
+**Note:** This recording is for demo purposes only. VPN credentials in this recording are **NOT** valid.
+
+<p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
 
 For servers with an external firewall (e.g. [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/vpc/docs/firewalls)), open UDP port 1194 for the VPN.
@@ -118,7 +123,7 @@ List of enhancements over Nyr/openvpn-install.
 - Supports exporting configuration for an existing VPN client
 - Supports listing existing VPN clients
 - Supports custom DNS server(s) for VPN clients
-- Optimized `sysctl` settings for improved VPN performance
+- Optimizes `sysctl` settings for improved VPN performance
 - Improved creation of client config files when using `sudo`
 
 ...and more!
