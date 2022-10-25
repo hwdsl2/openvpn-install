@@ -34,22 +34,10 @@ sudo bash openvpn.sh --auto
 
 <details>
 <summary>
-默认选项列表。
-</summary>
-
-```
-网络协议: UDP
-端口: UDP/1194
-客户端名称: client
-客户端 DNS: Google Public DNS
-```
-</details>
-<details>
-<summary>
 查看脚本的示例输出（终端记录）。
 </summary>
 
-**注：** 此终端记录仅用于演示目的。该记录中的 VPN 凭据 **无效**。
+**注：** 此终端记录仅用于演示目的。
 
 <p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
@@ -95,6 +83,8 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 
 **[配置 OpenVPN 客户端](docs/clients-zh.md)**
 
+**[下载 VPN 文档的 PDF 版本（支持者）](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-X8X5FVFZC)**
+
 开始使用自己的专属 VPN! :sparkles::tada::rocket::sparkles:
 
 <details>
@@ -104,7 +94,7 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 
 <a href="https://ko-fi.com/hwdsl2" target="_blank"><img height="36" width="187" src="docs/images/kofi2.png" border="0" alt="Buy Me a Coffee at ko-fi.com" /></a> &nbsp;&nbsp;<a href="https://coindrop.to/hwdsl2" target="_blank"><img src="docs/images/embed-button.png" height="36" width="145" border="0" alt="Coindrop.to me" /></a>
 
-仅限支持者的内容可用。[点击查看详情](https://ko-fi.com/hwdsl2)。
+仅限支持者的内容可用。[点击查看详情](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-X8X5FVFZC)。
 </details>
 
 ## 致谢
