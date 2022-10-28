@@ -154,7 +154,6 @@ if [[ $(uname -r | cut -d "." -f 1) -eq 2 ]]; then
 fi
 
 # Detect OS
-# $os_version variables aren't always in use, but are kept here for convenience
 if grep -qs "ubuntu" /etc/os-release; then
 	os="ubuntu"
 	os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
@@ -445,12 +444,20 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 			echo
 			echo "Note: firewalld, which is required to manage routing tables, will also be installed."
 		elif [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
-			# iptables is way less invasive than firewalld so no warning is given
 			firewall="iptables"
 		fi
 	fi
 	if [ "$auto" = 0 ]; then
-		read -n1 -r -p "Press any key to continue..."
+		printf "Do you want to continue? [Y/n] "
+		read -r response
+		case $response in
+			[yY][eE][sS]|[yY]|'')
+				:
+				;;
+			*)
+				abort_and_exit
+				;;
+		esac
 	fi
 	echo
 	echo "Installing OpenVPN, please wait..."
@@ -682,7 +689,7 @@ WantedBy=multi-user.target" >> /etc/systemd/system/openvpn-iptables.service
 					yum -y -q install policycoreutils-python >/dev/null
 				) || exiterr3
 			else
-				# CentOS 8 or Fedora
+				# CentOS 8/9 or Fedora
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
