@@ -72,6 +72,35 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 
 If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), then click the `Raw` button on the right. Press `Ctrl/Cmd+A` to select all, `Ctrl/Cmd+C` to copy, then paste into your favorite editor.
 </details>
+<details>
+<summary>
+Advanced: Auto install using custom options.
+</summary>
+
+Advanced users can auto install OpenVPN using custom options, by providing a Bash "here document" as input to the setup script. This method can also be used to provide input to manage users after install.
+
+First, install OpenVPN interactively using custom options, and write down all your inputs to the script.
+
+```bash
+sudo bash openvpn.sh
+```
+
+If you need to remove OpenVPN, run the script again and select the appropriate option.
+
+Next, create the custom install command using your inputs. Example:
+
+```bash
+sudo bash openvpn.sh <<ANSWERS
+1
+1194
+2
+client
+y
+ANSWERS
+```
+
+**Note:** The install options may change in future versions of the script.
+</details>
 
 \* A cloud server, virtual private server (VPS) or dedicated server.
 
