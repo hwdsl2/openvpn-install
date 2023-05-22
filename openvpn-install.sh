@@ -33,7 +33,7 @@ check_os() {
 		os="centos"
 		os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
 		group_name="nobody"
-	elif grep -qs "Amazon Linux release 2" /etc/system-release; then
+	elif grep -qs "Amazon Linux release 2 " /etc/system-release; then
 		os="centos"
 		os_version="7"
 		group_name="nobody"
@@ -572,7 +572,7 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 			apt-get -yqq install openssl ca-certificates $firewall >/dev/null
 		) || exiterr2
 	elif [[ "$os" = "centos" ]]; then
-		if grep -qs "Amazon Linux release 2" /etc/system-release; then
+		if grep -qs "Amazon Linux release 2 " /etc/system-release; then
 			(
 				set -x
 				amazon-linux-extras install epel -y >/dev/null
