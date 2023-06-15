@@ -37,6 +37,8 @@ check_os() {
 		os="centos"
 		os_version="7"
 		group_name="nobody"
+	elif grep -qs "Amazon Linux release 2023" /etc/system-release; then
+		exiterr "Amazon Linux 2023 is not supported."
 	elif [[ -e /etc/fedora-release ]]; then
 		os="fedora"
 		os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
