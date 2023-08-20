@@ -8,7 +8,4 @@ To add a VPN connection, first securely transfer the generated `.ovpn` file to y
 
 To manage OpenVPN clients, run the install script again: `sudo bash openvpn.sh`.
 
-Step-by-step instructions to configure and manage OpenVPN clients can be found in the following books:
-
-* [Build Your Own VPN Server: A Step by Step Guide](https://books2read.com/vpnguide)
-* [Set Up Your Own IPsec VPN, OpenVPN and WireGuard Server](https://books2read.com/vpn)
+Read [:book: VPN book](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-O5O7FVF8J) to learn step-by-step instructions to configure and manage OpenVPN clients.
