@@ -14,6 +14,7 @@
 exiterr()  { echo "Error: $1" >&2; exit 1; }
 exiterr2() { exiterr "'apt-get install' failed."; }
 exiterr3() { exiterr "'yum install' failed."; }
+exiterr4() { exiterr "'zypper install' failed."; }
 
 check_ip() {
 	IP_REGEX='^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
@@ -43,9 +44,13 @@ check_os() {
 		os="fedora"
 		os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
 		group_name="nobody"
+	elif [[ -e /etc/SUSE-brand && "$(head -1 /etc/SUSE-brand)" == "openSUSE" ]]; then
+		os="openSUSE"
+		os_version=$(tail -1 /etc/SUSE-brand | grep -oE '[0-9\\.]+')
+		group_name="nogroup"
 	else
 		exiterr "This installer seems to be running on an unsupported distribution.
-Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora and Amazon Linux 2."
+Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE and Amazon Linux 2."
 	fi
 }
 
@@ -104,6 +109,11 @@ install_iproute() {
 				apt-get -yqq update || apt-get -yqq update
 				apt-get -yqq install iproute2 >/dev/null
 			) || exiterr2
+		elif [ "$os" = "openSUSE" ]; then
+			(
+				set -x
+				zypper install iproute2 >/dev/null
+			) || exiterr4
 		else
 			(
 				set -x
@@ -341,12 +351,16 @@ check_firewall() {
 	if ! systemctl is-active --quiet firewalld.service && ! hash iptables 2>/dev/null; then
 		if [[ "$os" == "centos" || "$os" == "fedora" ]]; then
 			firewall="firewalld"
+		elif [[ "$os" == "openSUSE" ]]; then
+			firewall="firewalld"
+		elif [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
+			firewall="iptables"
+		fi
+		if [[ "$firewall" == "firewalld" ]]; then
 			# We don't want to silently enable firewalld, so we give a subtle warning
 			# If the user continues, firewalld will be installed and enabled during setup
 			echo
 			echo "Note: firewalld, which is required to manage routing tables, will also be installed."
-		elif [[ "$os" == "debian" || "$os" == "ubuntu" ]]; then
-			firewall="iptables"
 		fi
 	fi
 }
@@ -589,12 +603,17 @@ LimitNPROC=infinity" > /etc/systemd/system/openvpn-server@server.service.d/disab
 			set -x
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
 		) || exiterr3
-	else
-		# Else, OS must be Fedora
+	elif [[ "$os" = "fedora" ]]; then
 		(
 			set -x
 			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
 		) || exiterr "'dnf install' failed."
+	else
+		# Else, OS must be openSUSE
+		(
+			set -x
+			zypper install -y openvpn openssl ca-certificates tar $firewall >/dev/null
+		) || exiterr4
 	fi
 	# If firewalld was just installed, enable it
 	if [[ "$firewall" == "firewalld" ]]; then
@@ -774,7 +793,9 @@ WantedBy=multi-user.target" >> /etc/systemd/system/openvpn-iptables.service
 			systemctl enable --now openvpn-iptables.service >/dev/null 2>&1
 		)
 	fi
-	update_rclocal
+	if [ "$os" != "openSUSE" ]; then
+		update_rclocal
+	fi
 	# If SELinux is enabled and a custom port was selected, we need this
 	if sestatus 2>/dev/null | grep "Current mode" | grep -q "enforcing" && [[ "$port" != 1194 ]]; then
 		# Install semanage if not already present
@@ -812,10 +833,18 @@ cipher AES-128-GCM
 ignore-unknown-option block-outside-dns block-ipv6
 verb 3" > /etc/openvpn/server/client-common.txt
 	# Enable and start the OpenVPN service
-	(
-		set -x
-		systemctl enable --now openvpn-server@server.service >/dev/null 2>&1
-	)
+	if [ "$os" != "openSUSE" ]; then
+		(
+			set -x
+			systemctl enable --now openvpn-server@server.service >/dev/null 2>&1
+		)
+	else
+		ln -s /etc/openvpn/server/* /etc/openvpn >/dev/null 2>&1
+		(
+			set -x
+			systemctl enable --now openvpn@server.service >/dev/null 2>&1
+		)
+	fi
 	# Generates the custom client.ovpn
 	new_client
 	echo
@@ -990,7 +1019,11 @@ else
 				if sestatus 2>/dev/null | grep "Current mode" | grep -q "enforcing" && [[ "$port" != 1194 ]]; then
 					semanage port -d -t openvpn_port_t -p "$protocol" "$port"
 				fi
-				systemctl disable --now openvpn-server@server.service
+				if [ "$os" != "openSUSE" ]; then
+					systemctl disable --now openvpn-server@server.service
+				else
+					systemctl disable --now openvpn@server.service
+				fi
 				rm -f /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
 				rm -f /etc/sysctl.d/99-openvpn-forward.conf /etc/sysctl.d/99-openvpn-optimize.conf
 				if [ ! -f /usr/bin/wg-quick ] && [ ! -f /usr/sbin/ipsec ] \
@@ -1008,6 +1041,13 @@ else
 						rm -rf /etc/openvpn/server
 						apt-get remove --purge -y openvpn >/dev/null
 					)
+				elif [[ "$os" = "openSUSE" ]]; then
+					(
+						set -x
+						zypper remove -y openvpn >/dev/null
+						rm -rf /etc/openvpn/server
+					)
+					rm -f /etc/openvpn/ipp.txt
 				else
 					# Else, OS must be CentOS or Fedora
 					(
