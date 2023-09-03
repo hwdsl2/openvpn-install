@@ -171,18 +171,18 @@ detect_ip() {
 				if [ "$auto" = 0 ]; then
 					echo
 					echo "Which IPv4 address should be used?"
-					number_of_ip=$(ip -4 addr | grep inet | grep -vEc '127(\.[0-9]{1,3}){3}')
+					num_of_ip=$(ip -4 addr | grep inet | grep -vEc '127(\.[0-9]{1,3}){3}')
 					ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}' | nl -s ') '
-					read -rp "IPv4 address [1]: " ip_number
-					until [[ -z "$ip_number" || "$ip_number" =~ ^[0-9]+$ && "$ip_number" -le "$number_of_ip" ]]; do
-						echo "$ip_number: invalid selection."
-						read -rp "IPv4 address [1]: " ip_number
+					read -rp "IPv4 address [1]: " ip_num
+					until [[ -z "$ip_num" || "$ip_num" =~ ^[0-9]+$ && "$ip_num" -le "$num_of_ip" ]]; do
+						echo "$ip_num: invalid selection."
+						read -rp "IPv4 address [1]: " ip_num
 					done
-					[[ -z "$ip_number" ]] && ip_number=1
+					[[ -z "$ip_num" ]] && ip_num=1
 				else
-					ip_number=1
+					ip_num=1
 				fi
-				ip=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}' | sed -n "$ip_number"p)
+				ip=$(ip -4 addr | grep inet | grep -vE '127(\.[0-9]{1,3}){3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}' | sed -n "$ip_num"p)
 			fi
 		fi
 	fi
@@ -194,7 +194,7 @@ detect_ip() {
 }
 
 check_nat_ip() {
-	# If $ip is a private IP address, the server must be behind NAT
+	# If $ip is a private IP address, the server must be behind NAT
 	if printf '%s' "$ip" | grep -qE '^(10|127|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168|169\.254)\.'; then
 		find_public_ip
 		if ! check_ip "$get_public_ip"; then
@@ -238,18 +238,18 @@ detect_ipv6() {
 		if [ "$auto" = 0 ]; then
 			echo
 			echo "Which IPv6 address should be used?"
-			number_of_ip6=$(ip -6 addr | grep -c 'inet6 [23]')
+			num_of_ip6=$(ip -6 addr | grep -c 'inet6 [23]')
 			ip -6 addr | grep 'inet6 [23]' | cut -d '/' -f 1 | grep -oE '([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}' | nl -s ') '
-			read -rp "IPv6 address [1]: " ip6_number
-			until [[ -z "$ip6_number" || "$ip6_number" =~ ^[0-9]+$ && "$ip6_number" -le "$number_of_ip6" ]]; do
-				echo "$ip6_number: invalid selection."
-				read -rp "IPv6 address [1]: " ip6_number
+			read -rp "IPv6 address [1]: " ip6_num
+			until [[ -z "$ip6_num" || "$ip6_num" =~ ^[0-9]+$ && "$ip6_num" -le "$num_of_ip6" ]]; do
+				echo "$ip6_num: invalid selection."
+				read -rp "IPv6 address [1]: " ip6_num
 			done
-			[[ -z "$ip6_number" ]] && ip6_number=1
+			[[ -z "$ip6_num" ]] && ip6_num=1
 		else
-			ip6_number=1
+			ip6_num=1
 		fi
-		ip6=$(ip -6 addr | grep 'inet6 [23]' | cut -d '/' -f 1 | grep -oE '([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}' | sed -n "$ip6_number"p)
+		ip6=$(ip -6 addr | grep 'inet6 [23]' | cut -d '/' -f 1 | grep -oE '([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}' | sed -n "$ip6_num"p)
 	fi
 }
 
@@ -894,8 +894,8 @@ else
 			exit
 		;;
 		2)
-			number_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
-			if [[ "$number_of_clients" = 0 ]]; then
+			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
+			if [[ "$num_of_clients" = 0 ]]; then
 				echo
 				echo "There are no existing clients!"
 				exit
@@ -903,14 +903,14 @@ else
 			echo
 			echo "Select the client to export:"
 			tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
-			read -rp "Client: " client_number
-			[ -z "$client_number" ] && abort_and_exit
-			until [[ "$client_number" =~ ^[0-9]+$ && "$client_number" -le "$number_of_clients" ]]; do
-				echo "$client_number: invalid selection."
-				read -rp "Client: " client_number
-				[ -z "$client_number" ] && abort_and_exit
+			read -rp "Client: " client_num
+			[ -z "$client_num" ] && abort_and_exit
+			until [[ "$client_num" =~ ^[0-9]+$ && "$client_num" -le "$num_of_clients" ]]; do
+				echo "$client_num: invalid selection."
+				read -rp "Client: " client_num
+				[ -z "$client_num" ] && abort_and_exit
 			done
-			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_number"p)
+			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_num"p)
 			new_client
 			echo
 			echo "$client exported. Configuration available in: $export_dir$client.ovpn"
@@ -919,23 +919,23 @@ else
 		3)
 			echo
 			echo "Checking for existing client(s)..."
-			number_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
-			if [[ "$number_of_clients" = 0 ]]; then
+			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
+			if [[ "$num_of_clients" = 0 ]]; then
 				echo
 				echo "There are no existing clients!"
 				exit
 			fi
 			echo
 			tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
-			if [ "$number_of_clients" = 1 ]; then
+			if [ "$num_of_clients" = 1 ]; then
 				printf '\n%s\n' "Total: 1 client"
-			elif [ -n "$number_of_clients" ]; then
-				printf '\n%s\n' "Total: $number_of_clients clients"
+			elif [ -n "$num_of_clients" ]; then
+				printf '\n%s\n' "Total: $num_of_clients clients"
 			fi
 		;;
 		4)
-			number_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
-			if [[ "$number_of_clients" = 0 ]]; then
+			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
+			if [[ "$num_of_clients" = 0 ]]; then
 				echo
 				echo "There are no existing clients!"
 				exit
@@ -943,14 +943,14 @@ else
 			echo
 			echo "Select the client to revoke:"
 			tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
-			read -rp "Client: " client_number
-			[ -z "$client_number" ] && abort_and_exit
-			until [[ "$client_number" =~ ^[0-9]+$ && "$client_number" -le "$number_of_clients" ]]; do
-				echo "$client_number: invalid selection."
-				read -rp "Client: " client_number
-				[ -z "$client_number" ] && abort_and_exit
+			read -rp "Client: " client_num
+			[ -z "$client_num" ] && abort_and_exit
+			until [[ "$client_num" =~ ^[0-9]+$ && "$client_num" -le "$num_of_clients" ]]; do
+				echo "$client_num: invalid selection."
+				read -rp "Client: " client_num
+				[ -z "$client_num" ] && abort_and_exit
 			done
-			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_number"p)
+			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_num"p)
 			echo
 			read -rp "Confirm $client revocation? [y/N]: " revoke
 			until [[ "$revoke" =~ ^[yYnN]*$ ]]; do
