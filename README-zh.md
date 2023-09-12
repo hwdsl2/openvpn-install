@@ -52,6 +52,8 @@ sudo bash openvpn.sh --auto
 sudo bash openvpn.sh
 ```
 
+你可以自定义以下选项：VPN 服务器的域名，协议 (TCP/UDP) 和端口，VPN 客户端的 DNS 服务器以及第一个客户端的名称。
+
 <details>
 <summary>
 如果无法下载，请点这里。
@@ -130,6 +132,7 @@ ANSWERS
 - 改进了与 Setup IPsec VPN 的兼容性
 - 改进了脚本的可靠性，用户输入和输出
 - 支持使用默认选项自动安装
+- 支持使用域名作为服务器地址
 - 增加了对 openSUSE Linux 的支持
 - 增加了对 Amazon Linux 2 的支持
 - 支持导出现有 VPN 客户端的配置

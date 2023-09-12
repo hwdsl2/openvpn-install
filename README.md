@@ -52,6 +52,8 @@ For servers with an external firewall (e.g. [EC2](https://docs.aws.amazon.com/AW
 sudo bash openvpn.sh
 ```
 
+You can customize the following options: VPN server's DNS name, protocol (TCP/UDP) and port, DNS server for VPN clients and name of the first client.
+
 <details>
 <summary>
 Click here if you are unable to download.
@@ -130,6 +132,7 @@ List of enhancements over Nyr/openvpn-install.
 - Improved compatibility with Setup IPsec VPN
 - Improved script reliability, user input and output
 - Supports auto install using default options
+- Supports using a DNS name as server address
 - Added support for openSUSE Linux
 - Added support for Amazon Linux 2
 - Supports exporting configuration for an existing VPN client
