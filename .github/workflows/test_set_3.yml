@@ -87,6 +87,7 @@ jobs:
 
 
 
+
           ANSWERS
 
           sudo netstat -anpu | grep openvpn
@@ -100,3 +101,23 @@ jobs:
 
           sudo netstat -anpu | grep openvpn && exit 1
           rm -f ~/client*.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+          y
+          invalidfqdn
+          vpn.example.com
+
+
+
+
+
+          ANSWERS
+
+          grep -q 'local vpn.example.com' /etc/openvpn/server/server.conf
+          grep -q 'remote vpn.example.com 1194' /etc/openvpn/server/client-common.txt
+          grep -q 'remote vpn.example.com 1194' ~/client.ovpn
+
+          sudo bash openvpn.sh <<ANSWERS
+          5
+          y
+          ANSWERS
