@@ -298,7 +298,7 @@ select_protocol() {
 select_port() {
 	if [ "$auto" = 0 ]; then
 		echo
-		echo "What port should OpenVPN listen to?"
+		echo "Which port should OpenVPN listen to?"
 		read -rp "Port [1194]: " port
 		until [[ -z "$port" || "$port" =~ ^[0-9]+$ && "$port" -le 65535 ]]; do
 			echo "$port: invalid port."
