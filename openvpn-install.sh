@@ -5,7 +5,7 @@
 # Based on the work of Nyr and contributors at:
 # https://github.com/Nyr/openvpn-install
 #
-# Copyright (c) 2022-2023 Lin Song <linsongui@gmail.com>
+# Copyright (c) 2022-2024 Lin Song <linsongui@gmail.com>
 # Copyright (c) 2013-2023 Nyr
 #
 # Released under the MIT License, see the accompanying file LICENSE.txt
@@ -502,7 +502,7 @@ EOF
 show_header2() {
 cat <<'EOF'
 
-Copyright (c) 2022-2023 Lin Song
+Copyright (c) 2022-2024 Lin Song
 Copyright (c) 2013-2023 Nyr
 EOF
 }
@@ -955,6 +955,7 @@ else
 			elif [ -n "$num_of_clients" ]; then
 				printf '\n%s\n' "Total: $num_of_clients clients"
 			fi
+			exit
 		;;
 		4)
 			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
