@@ -55,13 +55,13 @@ Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, op
 }
 
 check_os_ver() {
-	if [[ "$os" == "ubuntu" && "$os_version" -lt 1804 ]]; then
-		exiterr "Ubuntu 18.04 or higher is required to use this installer.
+	if [[ "$os" == "ubuntu" && "$os_version" -lt 2004 ]]; then
+		exiterr "Ubuntu 20.04 or higher is required to use this installer.
 This version of Ubuntu is too old and unsupported."
 	fi
 
-	if [[ "$os" == "debian" && "$os_version" -lt 9 ]]; then
-		exiterr "Debian 9 or higher is required to use this installer.
+	if [[ "$os" == "debian" && "$os_version" -lt 10 ]]; then
+		exiterr "Debian 10 or higher is required to use this installer.
 This version of Debian is too old and unsupported."
 	fi
 
