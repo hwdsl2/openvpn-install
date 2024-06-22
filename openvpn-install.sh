@@ -21,6 +21,11 @@ check_ip() {
 	printf '%s' "$1" | tr -d '\n' | grep -Eq "$IP_REGEX"
 }
 
+check_dns_name() {
+	FQDN_REGEX='^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
+	printf '%s' "$1" | tr -d '\n' | grep -Eq "$FQDN_REGEX"
+}
+
 check_root() {
 	if [ "$(id -u)" != 0 ]; then
 		exiterr "This installer must be run as root. Try 'sudo bash $0'"
@@ -79,12 +84,10 @@ check_os_ver() {
 		exiterr "Ubuntu 20.04 or higher is required to use this installer.
 This version of Ubuntu is too old and unsupported."
 	fi
-
 	if [[ "$os" == "debian" && "$os_version" -lt 10 ]]; then
 		exiterr "Debian 10 or higher is required to use this installer.
 This version of Debian is too old and unsupported."
 	fi
-
 	if [[ "$os" == "centos" && "$os_version" -lt 7 ]]; then
 		exiterr "CentOS 7 or higher is required to use this installer.
 This version of CentOS is too old and unsupported."
@@ -122,11 +125,6 @@ check_nftables() {
 			exiterr "This system has nftables enabled, which is not supported by this installer."
 		fi
 	fi
-}
-
-check_dns_name() {
-	FQDN_REGEX='^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
-	printf '%s' "$1" | tr -d '\n' | grep -Eq "$FQDN_REGEX"
 }
 
 install_wget() {
@@ -172,11 +170,52 @@ install_iproute() {
 	fi
 }
 
-show_start_setup() {
+show_header() {
+cat <<'EOF'
+
+OpenVPN Script
+https://github.com/hwdsl2/openvpn-install
+EOF
+}
+
+show_header2() {
+cat <<'EOF'
+
+Welcome to this OpenVPN server installer!
+GitHub: https://github.com/hwdsl2/openvpn-install
+EOF
+}
+
+show_header3() {
+cat <<'EOF'
+
+Copyright (c) 2022-2024 Lin Song
+Copyright (c) 2013-2023 Nyr
+EOF
+}
+
+show_usage() {
+	if [ -n "$1" ]; then
+		echo "Error: $1" >&2
+	fi
+	show_header
+	show_header3
+cat 1>&2 <<EOF
+
+Usage: bash $0 [options]
+
+Options:
+  --auto      auto install OpenVPN using default options
+  -h, --help  show this help message and exit
+
+To customize install options, run this script without arguments.
+EOF
+	exit 1
+}
+
+show_welcome() {
 	if [ "$auto" = 0 ]; then
-		echo
-		echo 'Welcome to this OpenVPN server installer!'
-		echo 'GitHub: https://github.com/hwdsl2/openvpn-install'
+		show_header2
 		echo
 		echo 'I need to ask you a few questions before starting setup.'
 		echo 'You can use the default options and just press enter if you are OK with them.'
@@ -326,17 +365,17 @@ select_protocol() {
 			echo "$protocol: invalid selection."
 			read -rp "Protocol [1]: " protocol
 		done
+		case "$protocol" in
+			1|"")
+			protocol=udp
+			;;
+			2)
+			protocol=tcp
+			;;
+		esac
 	else
-		protocol=1
-	fi
-	case "$protocol" in
-		1|"")
 		protocol=udp
-		;;
-		2)
-		protocol=tcp
-		;;
-	esac
+	fi
 }
 
 select_port() {
@@ -396,7 +435,7 @@ set_client_name() {
 	client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
 }
 
-enter_client_name() {
+enter_first_client_name() {
 	if [ "$auto" = 0 ]; then
 		echo
 		echo "Enter a name for the first client:"
@@ -405,6 +444,13 @@ enter_client_name() {
 		[[ -z "$client" ]] && client=client
 	else
 		client=client
+	fi
+}
+
+show_setup_ready() {
+	if [ "$auto" = 0 ]; then
+		echo
+		echo "OpenVPN installation is ready to begin."
 	fi
 }
 
@@ -445,6 +491,11 @@ confirm_setup() {
 				;;
 		esac
 	fi
+}
+
+show_start_setup() {
+	echo
+	echo "Installing OpenVPN, please wait..."
 }
 
 disable_limitnproc() {
@@ -742,10 +793,6 @@ crl-verify crl.pem" >> "$OVPN_CONF"
 	fi
 }
 
-show_clients() {
-	tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
-}
-
 get_export_dir() {
 	export_to_home_dir=0
 	export_dir=~/
@@ -858,6 +905,8 @@ update_selinux() {
 }
 
 create_client_common() {
+	# If the server is behind NAT, use the correct IP address
+	[[ -n "$public_ip" ]] && ip="$public_ip"
 	# client-common.txt is created so we have a template to add further users later
 	echo "client
 dev tun
@@ -875,7 +924,6 @@ verb 3" > /etc/openvpn/server/client-common.txt
 }
 
 start_openvpn_service() {
-	# Enable and start the OpenVPN service
 	if [ "$os" != "openSUSE" ]; then
 		(
 			set -x
@@ -898,22 +946,6 @@ finish_setup() {
 	echo "New clients can be added by running this script again."
 }
 
-show_header() {
-cat <<'EOF'
-
-OpenVPN Script
-https://github.com/hwdsl2/openvpn-install
-EOF
-}
-
-show_header2() {
-cat <<'EOF'
-
-Copyright (c) 2022-2024 Lin Song
-Copyright (c) 2013-2023 Nyr
-EOF
-}
-
 select_menu_option() {
 	echo
 	echo "OpenVPN is already installed."
@@ -932,23 +964,167 @@ select_menu_option() {
 	done
 }
 
-show_usage() {
-	if [ -n "$1" ]; then
-		echo "Error: $1" >&2
+show_clients() {
+	tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
+}
+
+enter_client_name() {
+	echo
+	echo "Provide a name for the client:"
+	read -rp "Name: " unsanitized_client
+	[ -z "$unsanitized_client" ] && abort_and_exit
+	set_client_name
+	while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
+		echo "$client: invalid name."
+		read -rp "Name: " unsanitized_client
+		[ -z "$unsanitized_client" ] && abort_and_exit
+		set_client_name
+	done
+}
+
+build_client_config() {
+	cd /etc/openvpn/server/easy-rsa/ || exit 1
+	(
+		set -x
+		./easyrsa --batch --days=3650 build-client-full "$client" nopass >/dev/null 2>&1
+	)
+}
+
+print_client_action() {
+	echo
+	echo "$client $1. Configuration available in: $export_dir$client.ovpn"
+}
+
+print_check_clients() {
+	echo
+	echo "Checking for existing client(s)..."
+}
+
+check_clients() {
+	num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
+	if [[ "$num_of_clients" = 0 ]]; then
+		echo
+		echo "There are no existing clients!"
+		exit
 	fi
-	show_header
-	show_header2
-cat 1>&2 <<EOF
+}
 
-Usage: bash $0 [options]
+print_client_total() {
+	if [ "$num_of_clients" = 1 ]; then
+		printf '\n%s\n' "Total: 1 client"
+	elif [ -n "$num_of_clients" ]; then
+		printf '\n%s\n' "Total: $num_of_clients clients"
+	fi
+}
 
-Options:
-  --auto      auto install OpenVPN using default options
-  -h, --help  show this help message and exit
+select_client_to() {
+	echo
+	echo "Select the client to $1:"
+	show_clients
+	read -rp "Client: " client_num
+	[ -z "$client_num" ] && abort_and_exit
+	until [[ "$client_num" =~ ^[0-9]+$ && "$client_num" -le "$num_of_clients" ]]; do
+		echo "$client_num: invalid selection."
+		read -rp "Client: " client_num
+		[ -z "$client_num" ] && abort_and_exit
+	done
+	client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_num"p)
+}
 
-To customize install options, run this script without arguments.
-EOF
-	exit 1
+confirm_revoke_client() {
+	echo
+	read -rp "Confirm $client revocation? [y/N]: " revoke
+	until [[ "$revoke" =~ ^[yYnN]*$ ]]; do
+		echo "$revoke: invalid selection."
+		read -rp "Confirm $client revocation? [y/N]: " revoke
+	done
+}
+
+print_revoke_client() {
+	echo
+	echo "Revoking $client..."
+}
+
+remove_client_conf() {
+	get_export_dir
+	ovpn_file="$export_dir$client.ovpn"
+	if [ -f "$ovpn_file" ]; then
+		echo "Removing $ovpn_file..."
+		rm -f "$ovpn_file"
+	fi
+}
+
+revoke_client() {
+	cd /etc/openvpn/server/easy-rsa/ || exit 1
+	(
+		set -x
+		./easyrsa --batch revoke "$client" >/dev/null 2>&1
+		./easyrsa --batch --days=3650 gen-crl >/dev/null 2>&1
+	)
+	rm -f /etc/openvpn/server/crl.pem
+	cp /etc/openvpn/server/easy-rsa/pki/crl.pem /etc/openvpn/server/crl.pem
+	# CRL is read with each client connection, when OpenVPN is dropped to nobody
+	chown nobody:"$group_name" /etc/openvpn/server/crl.pem
+	remove_client_conf
+}
+
+print_client_revoked() {
+	echo
+	echo "$client revoked!"
+}
+
+print_client_revocation_aborted() {
+	echo
+	echo "$client revocation aborted!"
+}
+
+confirm_remove_ovpn() {
+	echo
+	read -rp "Confirm OpenVPN removal? [y/N]: " remove
+	until [[ "$remove" =~ ^[yYnN]*$ ]]; do
+		echo "$remove: invalid selection."
+		read -rp "Confirm OpenVPN removal? [y/N]: " remove
+	done
+}
+
+print_remove_ovpn() {
+	echo
+	echo "Removing OpenVPN, please wait..."
+}
+
+disable_ovpn_service() {
+	if [ "$os" != "openSUSE" ]; then
+		systemctl disable --now openvpn-server@server.service
+	else
+		systemctl disable --now openvpn@server.service
+	fi
+	rm -f /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
+}
+
+remove_sysctl_rules() {
+	rm -f /etc/sysctl.d/99-openvpn-forward.conf /etc/sysctl.d/99-openvpn-optimize.conf
+	if [ ! -f /usr/bin/wg-quick ] && [ ! -f /usr/sbin/ipsec ] \
+		&& [ ! -f /usr/local/sbin/ipsec ]; then
+		echo 0 > /proc/sys/net/ipv4/ip_forward
+		echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
+	fi
+}
+
+remove_rclocal_rules() {
+	ipt_cmd="systemctl restart openvpn-iptables.service"
+	if grep -qs "$ipt_cmd" /etc/rc.local; then
+		sed --follow-symlinks -i "/^$ipt_cmd/d" /etc/rc.local
+	fi
+}
+
+print_ovpn_removed() {
+	echo
+	echo "OpenVPN removed!"
+}
+
+print_ovpn_removal_aborted() {
+	echo
+	echo "OpenVPN removal aborted!"
 }
 
 ovpnsetup() {
@@ -970,7 +1146,7 @@ if [[ ! -e "$OVPN_CONF" ]]; then
 	parse_args "$@"
 	install_wget
 	install_iproute
-	show_start_setup
+	show_welcome
 	public_ip=""
 	if [ "$auto" = 0 ]; then
 		enter_server_address
@@ -983,15 +1159,11 @@ if [[ ! -e "$OVPN_CONF" ]]; then
 	select_protocol
 	select_port
 	select_dns
-	enter_client_name
-	if [ "$auto" = 0 ]; then
-		echo
-		echo "OpenVPN installation is ready to begin."
-	fi
+	enter_first_client_name
+	show_setup_ready
 	check_firewall
 	confirm_setup
-	echo
-	echo "Installing OpenVPN, please wait..."
+	show_start_setup
 	disable_limitnproc
 	install_pkgs
 	install_easyrsa
@@ -1003,8 +1175,6 @@ if [[ ! -e "$OVPN_CONF" ]]; then
 		update_rclocal
 	fi
 	update_selinux
-	# If the server is behind NAT, use the correct IP address
-	[[ -n "$public_ip" ]] && ip="$public_ip"
 	create_client_common
 	start_openvpn_service
 	new_client
@@ -1014,153 +1184,52 @@ else
 	select_menu_option
 	case "$option" in
 		1)
-			echo
-			echo "Provide a name for the client:"
-			read -rp "Name: " unsanitized_client
-			[ -z "$unsanitized_client" ] && abort_and_exit
-			set_client_name
-			while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
-				echo "$client: invalid name."
-				read -rp "Name: " unsanitized_client
-				[ -z "$unsanitized_client" ] && abort_and_exit
-				set_client_name
-			done
-			cd /etc/openvpn/server/easy-rsa/ || exit 1
-			(
-				set -x
-				./easyrsa --batch --days=3650 build-client-full "$client" nopass >/dev/null 2>&1
-			)
-			# Generates the custom client.ovpn
+			enter_client_name
+			build_client_config
 			new_client
-			echo
-			echo "$client added. Configuration available in: $export_dir$client.ovpn"
+			print_client_action added
 			exit
 		;;
 		2)
-			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
-			if [[ "$num_of_clients" = 0 ]]; then
-				echo
-				echo "There are no existing clients!"
-				exit
-			fi
-			echo
-			echo "Select the client to export:"
-			show_clients
-			read -rp "Client: " client_num
-			[ -z "$client_num" ] && abort_and_exit
-			until [[ "$client_num" =~ ^[0-9]+$ && "$client_num" -le "$num_of_clients" ]]; do
-				echo "$client_num: invalid selection."
-				read -rp "Client: " client_num
-				[ -z "$client_num" ] && abort_and_exit
-			done
-			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_num"p)
+			check_clients
+			select_client_to export
 			new_client
-			echo
-			echo "$client exported. Configuration available in: $export_dir$client.ovpn"
+			print_client_action exported
 			exit
 		;;
 		3)
-			echo
-			echo "Checking for existing client(s)..."
-			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
-			if [[ "$num_of_clients" = 0 ]]; then
-				echo
-				echo "There are no existing clients!"
-				exit
-			fi
+			print_check_clients
+			check_clients
 			echo
 			show_clients
-			if [ "$num_of_clients" = 1 ]; then
-				printf '\n%s\n' "Total: 1 client"
-			elif [ -n "$num_of_clients" ]; then
-				printf '\n%s\n' "Total: $num_of_clients clients"
-			fi
+			print_client_total
 			exit
 		;;
 		4)
-			num_of_clients=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep -c "^V")
-			if [[ "$num_of_clients" = 0 ]]; then
-				echo
-				echo "There are no existing clients!"
-				exit
-			fi
-			echo
-			echo "Select the client to revoke:"
-			show_clients
-			read -rp "Client: " client_num
-			[ -z "$client_num" ] && abort_and_exit
-			until [[ "$client_num" =~ ^[0-9]+$ && "$client_num" -le "$num_of_clients" ]]; do
-				echo "$client_num: invalid selection."
-				read -rp "Client: " client_num
-				[ -z "$client_num" ] && abort_and_exit
-			done
-			client=$(tail -n +2 /etc/openvpn/server/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | sed -n "$client_num"p)
-			echo
-			read -rp "Confirm $client revocation? [y/N]: " revoke
-			until [[ "$revoke" =~ ^[yYnN]*$ ]]; do
-				echo "$revoke: invalid selection."
-				read -rp "Confirm $client revocation? [y/N]: " revoke
-			done
+			check_clients
+			select_client_to revoke
+			confirm_revoke_client
 			if [[ "$revoke" =~ ^[yY]$ ]]; then
-				echo
-				echo "Revoking $client..."
-				cd /etc/openvpn/server/easy-rsa/ || exit 1
-				(
-					set -x
-					./easyrsa --batch revoke "$client" >/dev/null 2>&1
-					./easyrsa --batch --days=3650 gen-crl >/dev/null 2>&1
-				)
-				rm -f /etc/openvpn/server/crl.pem
-				cp /etc/openvpn/server/easy-rsa/pki/crl.pem /etc/openvpn/server/crl.pem
-				# CRL is read with each client connection, when OpenVPN is dropped to nobody
-				chown nobody:"$group_name" /etc/openvpn/server/crl.pem
-				get_export_dir
-				ovpn_file="$export_dir$client.ovpn"
-				if [ -f "$ovpn_file" ]; then
-					echo "Removing $ovpn_file..."
-					rm -f "$ovpn_file"
-				fi
-				echo
-				echo "$client revoked!"
+				print_revoke_client
+				revoke_client
+				print_client_revoked
 			else
-				echo
-				echo "$client revocation aborted!"
+				print_client_revocation_aborted
 			fi
 			exit
 		;;
 		5)
-			echo
-			read -rp "Confirm OpenVPN removal? [y/N]: " remove
-			until [[ "$remove" =~ ^[yYnN]*$ ]]; do
-				echo "$remove: invalid selection."
-				read -rp "Confirm OpenVPN removal? [y/N]: " remove
-			done
+			confirm_remove_ovpn
 			if [[ "$remove" =~ ^[yY]$ ]]; then
-				echo
-				echo "Removing OpenVPN, please wait..."
+				print_remove_ovpn
 				remove_firewall_rules
-				if [ "$os" != "openSUSE" ]; then
-					systemctl disable --now openvpn-server@server.service
-				else
-					systemctl disable --now openvpn@server.service
-				fi
-				rm -f /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
-				rm -f /etc/sysctl.d/99-openvpn-forward.conf /etc/sysctl.d/99-openvpn-optimize.conf
-				if [ ! -f /usr/bin/wg-quick ] && [ ! -f /usr/sbin/ipsec ] \
-					&& [ ! -f /usr/local/sbin/ipsec ]; then
-					echo 0 > /proc/sys/net/ipv4/ip_forward
-					echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
-				fi
-				ipt_cmd="systemctl restart openvpn-iptables.service"
-				if grep -qs "$ipt_cmd" /etc/rc.local; then
-					sed --follow-symlinks -i "/^$ipt_cmd/d" /etc/rc.local
-				fi
+				disable_ovpn_service
+				remove_sysctl_rules
+				remove_rclocal_rules
 				remove_pkgs
-				echo
-				echo "OpenVPN removed!"
+				print_ovpn_removed
 			else
-				echo
-				echo "OpenVPN removal aborted!"
+				print_ovpn_removal_aborted
 			fi
 			exit
 		;;
