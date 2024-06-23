@@ -28,6 +28,8 @@ First, download the script on your Linux server\*:
 wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 ```
 
+\* A cloud server, virtual private server (VPS) or dedicated server.
+
 **Option 1:** Auto install OpenVPN using default options.
 
 ```bash
@@ -108,8 +110,27 @@ ANSWERS
 
 **Note:** The install options may change in future versions of the script.
 </details>
+<details>
+<summary>
+View usage information for the OpenVPN script.
+</summary>
 
-\* A cloud server, virtual private server (VPS) or dedicated server.
+```
+Usage: bash openvpn.sh [options]
+
+Options:
+  --auto                        auto install OpenVPN using default options
+  --addclient [client name]     add a new client
+  --exportclient [client name]  export configuration for an existing client
+  --listclients                 list the names of existing clients
+  --revokeclient [client name]  revoke an existing client
+  --uninstall                   remove OpenVPN and delete all configuration
+  -y, --yes                     assume "yes" as answer to prompts when revoking a client or removing OpenVPN
+  -h, --help                    show this help message and exit
+
+To customize install options, run this script without arguments.
+```
+</details>
 
 ## Next steps
 
@@ -141,6 +162,7 @@ List of enhancements over Nyr/openvpn-install.
 - Supports exporting configuration for an existing VPN client
 - Supports listing existing VPN clients
 - Supports custom DNS server(s) for VPN clients
+- Supports command-line options for managing VPN clients
 - Optimizes `sysctl` settings for improved VPN performance
 - Improved creation of client config files when using `sudo`
 

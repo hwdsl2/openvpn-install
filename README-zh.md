@@ -28,6 +28,8 @@
 wget -O openvpn.sh https://get.vpnsetup.net/ovpn
 ```
 
+\* 一个云服务器，虚拟专用服务器 (VPS) 或者专用服务器。
+
 **选项 1:** 使用默认选项自动安装 OpenVPN。
 
 ```bash
@@ -108,8 +110,27 @@ ANSWERS
 
 **注：** 安装选项可能会在脚本的未来版本中发生变化。
 </details>
+<details>
+<summary>
+查看 OpenVPN 脚本的使用信息。
+</summary>
 
-\* 一个云服务器，虚拟专用服务器 (VPS) 或者专用服务器。
+```
+Usage: bash openvpn.sh [options]
+
+Options:
+  --auto                        auto install OpenVPN using default options
+  --addclient [client name]     add a new client
+  --exportclient [client name]  export configuration for an existing client
+  --listclients                 list the names of existing clients
+  --revokeclient [client name]  revoke an existing client
+  --uninstall                   remove OpenVPN and delete all configuration
+  -y, --yes                     assume "yes" as answer to prompts when revoking a client or removing OpenVPN
+  -h, --help                    show this help message and exit
+
+To customize install options, run this script without arguments.
+```
+</details>
 
 ## 下一步
 
@@ -141,6 +162,7 @@ ANSWERS
 - 支持导出现有 VPN 客户端的配置
 - 支持列出现有的 VPN 客户端
 - 支持为 VPN 客户端自定义 DNS 服务器
+- 支持使用命令行参数管理 VPN 客户端
 - 优化 `sysctl` 设置以提高 VPN 性能
 - 使用 `sudo` 时改进了客户端配置文件的创建
 
