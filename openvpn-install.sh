@@ -101,11 +101,46 @@ TUN needs to be enabled before running this installer."
 	fi
 }
 
+set_client_name() {
+	# Allow a limited set of characters to avoid conflicts
+	client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
+}
+
 parse_args() {
 	while [ "$#" -gt 0 ]; do
 		case $1 in
 			--auto)
 				auto=1
+				shift
+				;;
+			--addclient)
+				add_client=1
+				unsanitized_client="$2"
+				shift
+				shift
+				;;
+			--exportclient)
+				export_client=1
+				unsanitized_client="$2"
+				shift
+				shift
+				;;
+			--listclients)
+				list_clients=1
+				shift
+				;;
+			--revokeclient)
+				revoke_client=1
+				unsanitized_client="$2"
+				shift
+				shift
+				;;
+			--uninstall)
+				remove_ovpn=1
+				shift
+				;;
+			-y|--yes)
+				assume_yes=1
 				shift
 				;;
 			-h|--help)
@@ -116,6 +151,43 @@ parse_args() {
 				;;
 		esac
 	done
+}
+
+check_args() {
+	if [ "$auto" = 1 ] && [ -e "$OVPN_CONF" ]; then
+		echo "Error: Invalid parameter '--auto'. OpenVPN is already set up on this server." >&2
+		echo "       To manage OpenVPN clients, re-run this script without '--auto'." >&2
+		exit 1
+	fi
+	if [ "$((add_client + export_client + list_clients + revoke_client))" -gt 1 ]; then
+		show_usage "Invalid parameters. Specify only one of '--addclient', '--exportclient', '--listclients' or '--revokeclient'."
+	fi
+	if [ "$remove_ovpn" = 1 ]; then
+		if [ "$((add_client + export_client + list_clients + revoke_client + auto))" -gt 0 ]; then
+			show_usage "Invalid parameters. '--uninstall' cannot be specified with other parameters."
+		fi
+	fi
+	if [ ! -e "$OVPN_CONF" ]; then
+		[ "$add_client" = 1 ] && exiterr "You must first set up OpenVPN before adding a client."
+		[ "$export_client" = 1 ] && exiterr "You must first set up OpenVPN before exporting a client."
+		[ "$list_clients" = 1 ] && exiterr "You must first set up OpenVPN before listing clients."
+		[ "$revoke_client" = 1 ] && exiterr "You must first set up OpenVPN before revoking a client."
+		[ "$remove_ovpn" = 1 ] && exiterr "Cannot remove OpenVPN because it has not been set up on this server."
+	fi
+	if [ "$add_client" = 1 ]; then
+		set_client_name
+		if [ -z "$client" ]; then
+			exiterr "Invalid client name. Use one word only, no special characters except '-' and '_'."
+		elif [ -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]; then
+			exiterr "$client: invalid name. Client already exists."
+		fi
+	fi
+	if [ "$export_client" = 1 ] || [ "$revoke_client" = 1 ]; then
+		set_client_name
+		if [ -z "$client" ] || [ ! -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]; then
+			exiterr "Invalid client name, or client does not exist."
+		fi
+	fi
 }
 
 check_nftables() {
@@ -183,6 +255,7 @@ cat <<'EOF'
 
 Welcome to this OpenVPN server installer!
 GitHub: https://github.com/hwdsl2/openvpn-install
+
 EOF
 }
 
@@ -205,8 +278,14 @@ cat 1>&2 <<EOF
 Usage: bash $0 [options]
 
 Options:
-  --auto      auto install OpenVPN using default options
-  -h, --help  show this help message and exit
+  --auto                        auto install OpenVPN using default options
+  --addclient [client name]     add a new client
+  --exportclient [client name]  export configuration for an existing client
+  --listclients                 list the names of existing clients
+  --revokeclient [client name]  revoke an existing client
+  --uninstall                   remove OpenVPN and delete all configuration
+  -y, --yes                     assume "yes" as answer to prompts when revoking a client or removing OpenVPN
+  -h, --help                    show this help message and exit
 
 To customize install options, run this script without arguments.
 EOF
@@ -216,7 +295,6 @@ EOF
 show_welcome() {
 	if [ "$auto" = 0 ]; then
 		show_header2
-		echo
 		echo 'I need to ask you a few questions before starting setup.'
 		echo 'You can use the default options and just press enter if you are OK with them.'
 	else
@@ -428,11 +506,6 @@ select_dns() {
 	if [ "$dns" = 7 ]; then
 		enter_custom_dns
 	fi
-}
-
-set_client_name() {
-	# Allow a limited set of characters to avoid conflicts
-	client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
 }
 
 enter_first_client_name() {
@@ -975,7 +1048,11 @@ enter_client_name() {
 	[ -z "$unsanitized_client" ] && abort_and_exit
 	set_client_name
 	while [[ -z "$client" || -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]]; do
-		echo "$client: invalid name."
+		if [ -z "$client" ]; then
+			echo "Invalid client name. Use one word only, no special characters except '-' and '_'."
+		else
+			echo "$client: invalid name. Client already exists."
+		fi
 		read -rp "Name: " unsanitized_client
 		[ -z "$unsanitized_client" ] && abort_and_exit
 		set_client_name
@@ -1005,7 +1082,7 @@ check_clients() {
 	if [[ "$num_of_clients" = 0 ]]; then
 		echo
 		echo "There are no existing clients!"
-		exit
+		exit 1
 	fi
 }
 
@@ -1032,12 +1109,16 @@ select_client_to() {
 }
 
 confirm_revoke_client() {
-	echo
-	read -rp "Confirm $client revocation? [y/N]: " revoke
-	until [[ "$revoke" =~ ^[yYnN]*$ ]]; do
-		echo "$revoke: invalid selection."
+	if [ "$assume_yes" != 1 ]; then
+		echo
 		read -rp "Confirm $client revocation? [y/N]: " revoke
-	done
+		until [[ "$revoke" =~ ^[yYnN]*$ ]]; do
+			echo "$revoke: invalid selection."
+			read -rp "Confirm $client revocation? [y/N]: " revoke
+		done
+	else
+		revoke=y
+	fi
 }
 
 print_revoke_client() {
@@ -1054,7 +1135,7 @@ remove_client_conf() {
 	fi
 }
 
-revoke_client() {
+revoke_client_ovpn() {
 	cd /etc/openvpn/server/easy-rsa/ || exit 1
 	(
 		set -x
@@ -1079,12 +1160,16 @@ print_client_revocation_aborted() {
 }
 
 confirm_remove_ovpn() {
-	echo
-	read -rp "Confirm OpenVPN removal? [y/N]: " remove
-	until [[ "$remove" =~ ^[yYnN]*$ ]]; do
-		echo "$remove: invalid selection."
+	if [ "$assume_yes" != 1 ]; then
+		echo
 		read -rp "Confirm OpenVPN removal? [y/N]: " remove
-	done
+		until [[ "$remove" =~ ^[yYnN]*$ ]]; do
+			echo "$remove: invalid selection."
+			read -rp "Confirm OpenVPN removal? [y/N]: " remove
+		done
+	else
+		remove=y
+	fi
 }
 
 print_remove_ovpn() {
@@ -1141,9 +1226,76 @@ check_tun
 OVPN_CONF="/etc/openvpn/server/server.conf"
 
 auto=0
+assume_yes=0
+add_client=0
+export_client=0
+list_clients=0
+revoke_client=0
+remove_ovpn=0
+
+parse_args "$@"
+check_args
+
+if [ "$add_client" = 1 ]; then
+	show_header
+	echo
+	build_client_config
+	new_client
+	print_client_action added
+	exit 0
+fi
+
+if [ "$export_client" = 1 ]; then
+	show_header
+	new_client
+	print_client_action exported
+	exit 0
+fi
+
+if [ "$list_clients" = 1 ]; then
+	show_header
+	print_check_clients
+	check_clients
+	echo
+	show_clients
+	print_client_total
+	exit 0
+fi
+
+if [ "$revoke_client" = 1 ]; then
+	show_header
+	confirm_revoke_client
+	if [[ "$revoke" =~ ^[yY]$ ]]; then
+		print_revoke_client
+		revoke_client_ovpn
+		print_client_revoked
+		exit 0
+	else
+		print_client_revocation_aborted
+		exit 1
+	fi
+fi
+
+if [ "$remove_ovpn" = 1 ]; then
+	show_header
+	confirm_remove_ovpn
+	if [[ "$remove" =~ ^[yY]$ ]]; then
+		print_remove_ovpn
+		remove_firewall_rules
+		disable_ovpn_service
+		remove_sysctl_rules
+		remove_rclocal_rules
+		remove_pkgs
+		print_ovpn_removed
+		exit 0
+	else
+		print_ovpn_removal_aborted
+		exit 1
+	fi
+fi
+
 if [[ ! -e "$OVPN_CONF" ]]; then
 	check_nftables
-	parse_args "$@"
 	install_wget
 	install_iproute
 	show_welcome
@@ -1188,14 +1340,14 @@ else
 			build_client_config
 			new_client
 			print_client_action added
-			exit
+			exit 0
 		;;
 		2)
 			check_clients
 			select_client_to export
 			new_client
 			print_client_action exported
-			exit
+			exit 0
 		;;
 		3)
 			print_check_clients
@@ -1203,7 +1355,7 @@ else
 			echo
 			show_clients
 			print_client_total
-			exit
+			exit 0
 		;;
 		4)
 			check_clients
@@ -1211,12 +1363,13 @@ else
 			confirm_revoke_client
 			if [[ "$revoke" =~ ^[yY]$ ]]; then
 				print_revoke_client
-				revoke_client
+				revoke_client_ovpn
 				print_client_revoked
+				exit 0
 			else
 				print_client_revocation_aborted
+				exit 1
 			fi
-			exit
 		;;
 		5)
 			confirm_remove_ovpn
@@ -1228,13 +1381,14 @@ else
 				remove_rclocal_rules
 				remove_pkgs
 				print_ovpn_removed
+				exit 0
 			else
 				print_ovpn_removal_aborted
+				exit 1
 			fi
-			exit
 		;;
 		6)
-			exit
+			exit 0
 		;;
 	esac
 fi
