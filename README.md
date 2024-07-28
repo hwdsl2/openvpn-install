@@ -85,7 +85,9 @@ If you are unable to download, open [openvpn-install.sh](openvpn-install.sh), th
 Advanced: Auto install using custom options.
 </summary>
 
-Advanced users can auto install OpenVPN using custom options, by providing a Bash "here document" as input to the setup script. This method can also be used to provide input to manage users after install.
+Advanced users can auto install OpenVPN using custom options, by specifying command-line options when running the script. For more details, see the next section "view usage information for the OpenVPN script".
+
+Alternatively, you may provide a Bash "here document" as input to the setup script. This method can also be used to provide input to manage users after install.
 
 First, install OpenVPN interactively using custom options, and write down all your inputs to the script.
 
@@ -119,7 +121,7 @@ View usage information for the OpenVPN script.
 Usage: bash openvpn.sh [options]
 
 Options:
-  --auto                        auto install OpenVPN using default options
+
   --addclient [client name]     add a new client
   --exportclient [client name]  export configuration for an existing client
   --listclients                 list the names of existing clients
@@ -128,7 +130,18 @@ Options:
   -y, --yes                     assume "yes" as answer to prompts when revoking a client or removing OpenVPN
   -h, --help                    show this help message and exit
 
-To customize install options, run this script without arguments.
+Install options (optional):
+
+  --auto                        auto install OpenVPN using default or custom options
+  --serveraddr [DNS name]       server address, must be a fully qualified domain name (FQDN).
+                                If not specified, the server's IPv4 address will be used.
+  --proto [TCP or UDP]          protocol for OpenVPN (TCP or UDP, default: UDP)
+  --port [number]               port for OpenVPN (1-65535, default: 1194)
+  --clientname [client name]    name for the first OpenVPN client (default: client)
+  --dns1 [DNS server IP]        primary DNS server for clients (default: Google Public DNS)
+  --dns2 [DNS server IP]        secondary DNS server for clients
+
+To customize options, you may also run this script without arguments.
 ```
 </details>
 
@@ -155,7 +168,7 @@ List of enhancements over Nyr/openvpn-install.
 
 - Improved compatibility with Setup IPsec VPN
 - Improved script reliability, user input and output
-- Supports auto install using default options
+- Supports auto install using default or custom options
 - Supports using a DNS name as server address
 - Added support for openSUSE Linux
 - Added support for Amazon Linux 2

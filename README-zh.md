@@ -85,7 +85,9 @@ https://gitlab.com/hwdsl2/openvpn-install/-/raw/master/openvpn-install.sh
 高级：使用自定义选项自动安装。
 </summary>
 
-高级用户可以使用自定义选项自动安装 OpenVPN，方法是提供一个 Bash "here document" 作为安装脚本的输入。此方法还可用于在安装后提供输入以管理用户。
+高级用户可以使用自定义选项自动安装 OpenVPN，方法是在运行脚本时指定命令行参数。有关更多信息，请参见下一节，查看 OpenVPN 脚本的使用信息。
+
+或者，你也可以提供一个 Bash "here document" 作为安装脚本的输入。此方法还可用于在安装后提供输入以管理用户。
 
 首先，使用自定义选项以交互方式安装 OpenVPN，并写下你对脚本的所有输入值。
 
@@ -119,7 +121,7 @@ ANSWERS
 Usage: bash openvpn.sh [options]
 
 Options:
-  --auto                        auto install OpenVPN using default options
+
   --addclient [client name]     add a new client
   --exportclient [client name]  export configuration for an existing client
   --listclients                 list the names of existing clients
@@ -128,7 +130,18 @@ Options:
   -y, --yes                     assume "yes" as answer to prompts when revoking a client or removing OpenVPN
   -h, --help                    show this help message and exit
 
-To customize install options, run this script without arguments.
+Install options (optional):
+
+  --auto                        auto install OpenVPN using default or custom options
+  --serveraddr [DNS name]       server address, must be a fully qualified domain name (FQDN).
+                                If not specified, the server's IPv4 address will be used.
+  --proto [TCP or UDP]          protocol for OpenVPN (TCP or UDP, default: UDP)
+  --port [number]               port for OpenVPN (1-65535, default: 1194)
+  --clientname [client name]    name for the first OpenVPN client (default: client)
+  --dns1 [DNS server IP]        primary DNS server for clients (default: Google Public DNS)
+  --dns2 [DNS server IP]        secondary DNS server for clients
+
+To customize options, you may also run this script without arguments.
 ```
 </details>
 
@@ -155,7 +168,7 @@ To customize install options, run this script without arguments.
 
 - 改进了与 Setup IPsec VPN 的兼容性
 - 改进了脚本的可靠性，用户输入和输出
-- 支持使用默认选项自动安装
+- 支持使用默认或自定义选项自动安装
 - 支持使用域名作为服务器地址
 - 增加了对 openSUSE Linux 的支持
 - 增加了对 Amazon Linux 2 的支持
