@@ -88,9 +88,11 @@ This version of Ubuntu is too old and unsupported."
 		exiterr "Debian 10 or higher is required to use this installer.
 This version of Debian is too old and unsupported."
 	fi
-	if [[ "$os" == "centos" && "$os_version" -lt 7 ]]; then
-		exiterr "CentOS 7 or higher is required to use this installer.
+	if [[ "$os" == "centos" && "$os_version" -lt 8 ]]; then
+		if ! grep -qs "Amazon Linux release 2 " /etc/system-release; then
+			exiterr "CentOS 8 or higher is required to use this installer.
 This version of CentOS is too old and unsupported."
+		fi
 	fi
 }
 
