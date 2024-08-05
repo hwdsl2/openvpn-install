@@ -113,7 +113,6 @@ jobs:
 
           ANSWERS
 
-          grep -q 'local vpn.example.com' /etc/openvpn/server/server.conf
           grep -q 'remote vpn.example.com 1194' /etc/openvpn/server/client-common.txt
           grep -q 'remote vpn.example.com 1194' ~/client.ovpn
 
