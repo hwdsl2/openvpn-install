@@ -146,6 +146,11 @@ parse_args() {
 				remove_ovpn=1
 				shift
 				;;
+			--listenaddr)
+				listen_addr="$2"
+				shift
+				shift
+				;;
 			--serveraddr)
 				server_addr="$2"
 				shift
@@ -203,17 +208,18 @@ check_args() {
 		fi
 	fi
 	if [ ! -e "$OVPN_CONF" ]; then
-		[ "$add_client" = 1 ] && exiterr "You must first set up OpenVPN before adding a client."
-		[ "$export_client" = 1 ] && exiterr "You must first set up OpenVPN before exporting a client."
-		[ "$list_clients" = 1 ] && exiterr "You must first set up OpenVPN before listing clients."
-		[ "$revoke_client" = 1 ] && exiterr "You must first set up OpenVPN before revoking a client."
+		st_text="You must first set up OpenVPN before"
+		[ "$add_client" = 1 ] && exiterr "$st_text adding a client."
+		[ "$export_client" = 1 ] && exiterr "$st_text exporting a client."
+		[ "$list_clients" = 1 ] && exiterr "$st_text listing clients."
+		[ "$revoke_client" = 1 ] && exiterr "$st_text revoking a client."
 		[ "$remove_ovpn" = 1 ] && exiterr "Cannot remove OpenVPN because it has not been set up on this server."
 	fi
 	if [ "$((add_client + export_client + revoke_client))" = 1 ] && [ -n "$first_client_name" ]; then
 		show_usage "Invalid parameters. '--clientname' can only be specified when installing OpenVPN."
 	fi
-	if [ -n "$server_addr" ] || [ -n "$server_proto" ] || [ -n "$server_port" ] \
-		|| [ -n "$first_client_name" ] || [ -n "$dns1" ]; then
+	if [ -n "$listen_addr" ] || [ -n "$server_addr" ] || [ -n "$server_proto" ] \
+		|| [ -n "$server_port" ] || [ -n "$first_client_name" ] || [ -n "$dns1" ]; then
 			if [ -e "$OVPN_CONF" ]; then
 				show_usage "Invalid parameters. OpenVPN is already set up on this server."
 			elif [ "$auto" = 0 ]; then
@@ -233,6 +239,12 @@ check_args() {
 		if [ -z "$client" ] || [ ! -e /etc/openvpn/server/easy-rsa/pki/issued/"$client".crt ]; then
 			exiterr "Invalid client name, or client does not exist."
 		fi
+	fi
+	if [ -n "$listen_addr" ] && ! check_ip "$listen_addr"; then
+		show_usage "Invalid listen address. Must be an IPv4 address."
+	fi
+	if [ -n "$listen_addr" ] && [ -z "$server_addr" ]; then
+		show_usage "You must also specify the server address if the listen address is specified."
 	fi
 	if [ -n "$server_addr" ] && { ! check_dns_name "$server_addr" && ! check_ip "$server_addr"; }; then
 		exiterr "Invalid server address. Must be a fully qualified domain name (FQDN) or an IPv4 address."
@@ -376,7 +388,8 @@ Options:
 Install options (optional):
 
   --auto                         auto install OpenVPN using default or custom options
-  --serveraddr [DNS name or IP]  server address, must be a fully qualified domain name (FQDN) or an IPv4 address.
+  --listenaddr [IPv4 address]    IPv4 address that OpenVPN should listen on for requests
+  --serveraddr [DNS name or IP]  server address, must be a fully qualified domain name (FQDN) or an IPv4 address
   --proto [TCP or UDP]           protocol for OpenVPN (TCP or UDP, default: UDP)
   --port [number]                port for OpenVPN (1-65535, default: 1194)
   --clientname [client name]     name for the first OpenVPN client (default: client)
@@ -396,8 +409,8 @@ show_welcome() {
 	else
 		show_header
 		op_text=default
-		if [ -n "$server_addr" ] || [ -n "$server_proto" ] || [ -n "$server_port" ] \
-			|| [ -n "$first_client_name" ] || [ -n "$dns1" ]; then
+		if [ -n "$listen_addr" ] || [ -n "$server_addr" ] || [ -n "$server_proto" ] \
+			|| [ -n "$server_port" ] || [ -n "$first_client_name" ] || [ -n "$dns1" ]; then
 			op_text=custom
 		fi
 		echo
@@ -524,6 +537,9 @@ check_nat_ip() {
 show_config() {
 	if [ "$auto" != 0 ]; then
 		echo
+		if [ -n "$listen_addr" ]; then
+			echo "Listen address: $listen_addr"
+		fi
 		if [ -n "$server_addr" ]; then
 			echo "Server address: $server_addr"
 		else
@@ -1363,6 +1379,7 @@ list_clients=0
 revoke_client=0
 remove_ovpn=0
 public_ip=""
+listen_addr=""
 server_addr=""
 server_proto=""
 server_port=""
@@ -1442,7 +1459,11 @@ if [[ ! -e "$OVPN_CONF" ]]; then
 	if [ "$auto" = 0 ]; then
 		enter_server_address
 	else
-		detect_ip
+		if [ -n "$listen_addr" ]; then
+			ip="$listen_addr"
+		else
+			detect_ip
+		fi
 		if [ -n "$server_addr" ]; then
 			public_ip="$server_addr"
 		else
