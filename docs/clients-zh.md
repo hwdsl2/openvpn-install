@@ -31,7 +31,8 @@ Options:
 Install options (optional):
 
   --auto                         auto install OpenVPN using default or custom options
-  --serveraddr [DNS name or IP]  server address, must be a fully qualified domain name (FQDN) or an IPv4 address.
+  --listenaddr [IPv4 address]    IPv4 address that OpenVPN should listen on for requests
+  --serveraddr [DNS name or IP]  server address, must be a fully qualified domain name (FQDN) or an IPv4 address
   --proto [TCP or UDP]           protocol for OpenVPN (TCP or UDP, default: UDP)
   --port [number]                port for OpenVPN (1-65535, default: 1194)
   --clientname [client name]     name for the first OpenVPN client (default: client)
