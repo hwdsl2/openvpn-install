@@ -600,7 +600,7 @@ select_protocol() {
 select_port() {
 	if [ "$auto" = 0 ]; then
 		echo
-		echo "Which port should OpenVPN listen to?"
+		echo "Which port should OpenVPN listen on?"
 		read -rp "Port [1194]: " port
 		until [[ -z "$port" || "$port" =~ ^[0-9]+$ && "$port" -le 65535 ]]; do
 			echo "$port: invalid port."
@@ -1289,6 +1289,8 @@ revoke_client_ovpn() {
 		./easyrsa --batch --days=3650 gen-crl >/dev/null 2>&1
 	)
 	rm -f /etc/openvpn/server/crl.pem
+	rm -f /etc/openvpn/server/easy-rsa/pki/reqs/"$client".req
+	rm -f /etc/openvpn/server/easy-rsa/pki/private/"$client".key
 	cp /etc/openvpn/server/easy-rsa/pki/crl.pem /etc/openvpn/server/crl.pem
 	# CRL is read with each client connection, when OpenVPN is dropped to nobody
 	chown nobody:"$group_name" /etc/openvpn/server/crl.pem
