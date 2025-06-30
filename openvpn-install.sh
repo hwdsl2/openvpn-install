@@ -5,7 +5,7 @@
 # Based on the work of Nyr and contributors at:
 # https://github.com/Nyr/openvpn-install
 #
-# Copyright (c) 2022-2024 Lin Song <linsongui@gmail.com>
+# Copyright (c) 2022-2025 Lin Song <linsongui@gmail.com>
 # Copyright (c) 2013-2023 Nyr
 #
 # Released under the MIT License, see the accompanying file LICENSE.txt
@@ -360,7 +360,7 @@ EOF
 show_header3() {
 cat <<'EOF'
 
-Copyright (c) 2022-2024 Lin Song
+Copyright (c) 2022-2025 Lin Song
 Copyright (c) 2013-2023 Nyr
 EOF
 }
@@ -891,7 +891,7 @@ install_easyrsa() {
 	# Get easy-rsa
 	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.3/EasyRSA-3.2.3.tgz'
 	mkdir -p /etc/openvpn/server/easy-rsa/
-	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
+	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1 2>/dev/null
 	if [ ! -f /etc/openvpn/server/easy-rsa/easyrsa ]; then
 		exiterr "Failed to download EasyRSA from $easy_rsa_url."
 	fi
@@ -1113,7 +1113,7 @@ update_selinux() {
 					yum -y -q install policycoreutils-python >/dev/null
 				) || exiterr3
 			else
-				# CentOS 8/9 or Fedora
+				# CentOS 8/9/10 or Fedora
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
