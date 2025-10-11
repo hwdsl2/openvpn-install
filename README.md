@@ -10,9 +10,7 @@ This script will let you set up your own VPN server in just a few minutes, even 
 
 See also: [WireGuard](https://github.com/hwdsl2/wireguard-install) and [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) server auto setup scripts.
 
----
-#### [&raquo; :book: FREE eBook (limited time): Privacy Tools in the Age of AI](https://books2read.com/privacy?store=amazon)
----
+**[&raquo; :book: Book: Privacy Tools in the Age of AI](https://books2read.com/privacy?store=amazon) &nbsp;[Build Your Own VPN Server](docs/vpn-book.md)**
 
 ## Features
 
