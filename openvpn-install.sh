@@ -889,7 +889,7 @@ remove_firewall_rules() {
 
 install_easyrsa() {
 	# Get easy-rsa
-	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.4/EasyRSA-3.2.4.tgz'
+	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.5/EasyRSA-3.2.5.tgz'
 	mkdir -p /etc/openvpn/server/easy-rsa/
 	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1 2>/dev/null
 	if [ ! -f /etc/openvpn/server/easy-rsa/easyrsa ]; then
