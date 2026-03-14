@@ -1,18 +1,18 @@
 [English](clients.md) | [简体中文](clients-zh.md) | [繁體中文](clients-zh-Hant.md)
 
-# Configure OpenVPN Clients
+# 設定 OpenVPN 客戶端
 
-[OpenVPN clients](https://openvpn.net/vpn-client/) are available for Windows, macOS, iOS, Android and Linux. macOS users can also use [Tunnelblick](https://tunnelblick.net).
+[OpenVPN 客戶端](https://openvpn.net/vpn-client/) 可在 Windows、macOS、iOS、Android 和 Linux 上使用。macOS 使用者也可以使用 [Tunnelblick](https://tunnelblick.net)。
 
-To add a VPN connection, first securely transfer the generated `.ovpn` file to your device, then open the OpenVPN App and import the VPN profile.
+要新增 VPN 連線，請先將生成的 `.ovpn` 檔案安全地傳送到你的裝置，然後開啟 OpenVPN 應用程式並匯入 VPN 設定檔。
 
-To manage OpenVPN clients, run the install script again: `sudo bash openvpn.sh`.
+要管理 OpenVPN 客戶端，請再次執行安裝腳本：`sudo bash openvpn.sh`。
 
-Read [:book: VPN book](vpn-book.md) to learn step-by-step instructions to configure and manage OpenVPN clients.
+閱讀 [:book: VPN book](vpn-book-zh-Hant.md) 以了解設定與管理 OpenVPN 客戶端的逐步說明。
 
 <details>
 <summary>
-View usage information for the OpenVPN script.
+查看 OpenVPN 腳本的使用資訊。
 </summary>
 
 ```
