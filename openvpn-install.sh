@@ -64,6 +64,10 @@ check_os() {
 		os="centos"
 		os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
 		group_name="nobody"
+	elif [[ -e /etc/redhat-release ]]; then
+		os="rhel"
+		os_version=$(grep -oE '[0-9]+' /etc/redhat-release | head -1)
+		group_name="nobody"
 	elif grep -qs "Amazon Linux release 2 " /etc/system-release; then
 		os="centos"
 		os_version="7"
@@ -80,7 +84,7 @@ check_os() {
 		group_name="nogroup"
 	else
 		exiterr "This installer seems to be running on an unsupported distribution.
-Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE and Amazon Linux 2."
+Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, RHEL, Fedora, openSUSE and Amazon Linux 2."
 	fi
 }
 
@@ -98,6 +102,10 @@ This version of Debian is too old and unsupported."
 			exiterr "CentOS 8 or higher is required to use this installer.
 This version of CentOS is too old and unsupported."
 		fi
+	fi
+	if [[ "$os" == "rhel" && "$os_version" -lt 8 ]]; then
+		exiterr "RHEL 8 or higher is required to use this installer.
+This version of RHEL is too old and unsupported."
 	fi
 }
 
@@ -289,7 +297,7 @@ check_args() {
 }
 
 check_nftables() {
-	if [ "$os" = "centos" ]; then
+	if [ "$os" = "centos" ] || [ "$os" = "rhel" ]; then
 		if grep -qs "hwdsl2 VPN script" /etc/sysconfig/nftables.conf \
 			|| systemctl is-active --quiet nftables 2>/dev/null; then
 			exiterr "This system has nftables enabled, which is not supported by this installer."
@@ -676,7 +684,7 @@ show_setup_ready() {
 check_firewall() {
 	# Install a firewall if firewalld or iptables are not already available
 	if ! systemctl is-active --quiet firewalld.service && ! hash iptables 2>/dev/null; then
-		if [[ "$os" == "centos" || "$os" == "fedora" ]]; then
+		if [[ "$os" == "centos" || "$os" == "fedora" || "$os" == "rhel" ]]; then
 			firewall="firewalld"
 		elif [[ "$os" == "openSUSE" ]]; then
 			firewall="firewalld"
@@ -754,6 +762,12 @@ install_pkgs() {
 			set -x
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
 		) || exiterr3
+	elif [[ "$os" = "rhel" ]]; then
+		(
+			set -x
+			yum -y -q install https://dl.fedoraproject.org/pub/epel/epel-release-latest-"$os_version".noarch.rpm >/dev/null
+			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
+		) || exiterr3
 	elif [[ "$os" = "fedora" ]]; then
 		(
 			set -x
@@ -790,7 +804,7 @@ remove_pkgs() {
 		)
 		rm -f /etc/openvpn/ipp.txt
 	else
-		# Else, OS must be CentOS or Fedora
+		# Else, OS must be CentOS, RHEL or Fedora
 		(
 			set -x
 			yum -y -q remove openvpn >/dev/null
@@ -1113,7 +1127,7 @@ update_selinux() {
 					yum -y -q install policycoreutils-python >/dev/null
 				) || exiterr3
 			else
-				# CentOS 8/9/10 or Fedora
+				# CentOS 8/9/10, RHEL or Fedora
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
