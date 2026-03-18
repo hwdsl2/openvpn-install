@@ -2,7 +2,7 @@
 
 # 設定 OpenVPN 客戶端
 
-[OpenVPN 客戶端](https://openvpn.net/vpn-client/) 可在 Windows、macOS、iOS、Android 和 Linux 上使用。macOS 使用者也可以使用 [Tunnelblick](https://tunnelblick.net)。
+[OpenVPN 客戶端](https://openvpn.net/vpn-client/)可在 Windows、macOS、iOS、Android 和 Linux 上使用。macOS 使用者也可以使用 [Tunnelblick](https://tunnelblick.net)。
 
 要新增 VPN 連線，請先將生成的 `.ovpn` 檔案安全地傳送到你的裝置，然後開啟 OpenVPN 應用程式並匯入 VPN 設定檔。
 
