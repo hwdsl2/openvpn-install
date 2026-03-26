@@ -55,18 +55,40 @@ check_os() {
 	if grep -qs "ubuntu" /etc/os-release; then
 		os="ubuntu"
 		os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
+		if [[ -z "$os_version" || ! "$os_version" =~ ^[0-9]+$ || "$os_version" -lt 2004 ]]; then
+			ubuntu_codename=$(grep 'UBUNTU_CODENAME' /etc/os-release | cut -d '=' -f 2 | tr -d '"')
+			case "$ubuntu_codename" in
+				focal)    os_version=2004 ;;
+				jammy)    os_version=2204 ;;
+				noble)    os_version=2404 ;;
+			esac
+		fi
 		group_name="nogroup"
 	elif [[ -e /etc/debian_version ]]; then
 		os="debian"
 		os_version=$(grep -oE '[0-9]+' /etc/debian_version | head -1)
+		if [[ -z "$os_version" ]]; then
+			debian_codename=$(grep '^DEBIAN_CODENAME' /etc/os-release 2>/dev/null | cut -d '=' -f 2)
+			case "$debian_codename" in
+				buster)   os_version=10 ;;
+				bullseye) os_version=11 ;;
+				bookworm) os_version=12 ;;
+				trixie)   os_version=13 ;;
+			esac
+		fi
 		group_name="nogroup"
+	elif grep -qs "Alibaba Cloud Linux" /etc/system-release 2>/dev/null; then
+		os="centos"
+		al_ver=$(grep -oE '[0-9]+' /etc/system-release | head -1)
+		if [[ "$al_ver" -ge 3 ]]; then
+			os_version=9
+		else
+			os_version=7
+		fi
+		group_name="nobody"
 	elif [[ -e /etc/almalinux-release || -e /etc/rocky-release || -e /etc/centos-release ]]; then
 		os="centos"
 		os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
-		group_name="nobody"
-	elif [[ -e /etc/redhat-release ]]; then
-		os="rhel"
-		os_version=$(grep -oE '[0-9]+' /etc/redhat-release | head -1)
 		group_name="nobody"
 	elif grep -qs "Amazon Linux release 2 " /etc/system-release; then
 		os="centos"
@@ -78,9 +100,18 @@ check_os() {
 		os="fedora"
 		os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
 		group_name="nobody"
-	elif [[ -e /etc/SUSE-brand && "$(head -1 /etc/SUSE-brand)" == "openSUSE" ]]; then
+	elif [[ -e /etc/redhat-release ]]; then
+		os="rhel"
+		os_version=$(grep -oE '[0-9]+' /etc/redhat-release | head -1)
+		group_name="nobody"
+	elif [[ -e /etc/SUSE-brand && "$(head -1 /etc/SUSE-brand)" == "openSUSE" ]] \
+		|| grep -qs '^ID=.*opensuse' /etc/os-release; then
 		os="openSUSE"
-		os_version=$(tail -1 /etc/SUSE-brand | grep -oE '[0-9\\.]+')
+		if [[ -e /etc/SUSE-brand ]]; then
+			os_version=$(tail -1 /etc/SUSE-brand | grep -oE '[0-9\\.]+')
+		else
+			os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2)
+		fi
 		group_name="nogroup"
 	else
 		exiterr "This installer seems to be running on an unsupported distribution.
