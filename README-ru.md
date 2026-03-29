@@ -4,13 +4,13 @@
 
 [![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://img.shields.io/github/stars/hwdsl2/openvpn-install.svg?cacheSeconds=86400&logo=github&style=flat)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-**Новинка:** Также доступно: [сервер OpenVPN на Docker](https://github.com/hwdsl2/docker-openvpn).
+**Новинка:** Также доступно: [сервер OpenVPN на Docker](https://github.com/hwdsl2/docker-openvpn/blob/main/README-ru.md).
 
 Установщик сервера OpenVPN для Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 2 и Raspberry Pi OS.
 
 Этот скрипт позволит вам настроить собственный VPN-сервер всего за несколько минут, даже если вы раньше не использовали OpenVPN. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) — это протокол VPN с открытым исходным кодом, надёжный и очень гибкий.
 
-См. также: скрипты автоматической установки серверов [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-ru.md) и [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md). Для запуска OpenVPN в Docker см. [сервер OpenVPN на Docker](https://github.com/hwdsl2/docker-openvpn).
+См. также: скрипты автоматической установки серверов [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-ru.md) и [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md). Для запуска OpenVPN в Docker см. [сервер OpenVPN на Docker](https://github.com/hwdsl2/docker-openvpn/blob/main/README-ru.md).
 
 **[&raquo; :book: Книга: Privacy Tools in the Age of AI](docs/vpn-book.md) &nbsp;[Build Your Own VPN Server](docs/vpn-book.md)**
 
