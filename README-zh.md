@@ -10,7 +10,7 @@
 
 该脚本可让你在几分钟内建立自己的 VPN 服务器，即使你以前没有使用过 OpenVPN。[OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) 是一种开源、强大且高度灵活的 VPN 协议。
 
-另见：[WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-zh.md) 和 [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md) 服务器一键安装脚本。如需在 Docker 中运行 OpenVPN，请参阅 [Docker 上的 OpenVPN 服务器](https://github.com/hwdsl2/docker-openvpn/blob/main/README-zh.md)。
+另见：[WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-zh.md)、[IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md) 和 [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-zh.md) 服务器一键安装脚本。
 
 **[&raquo; :book: Book: Privacy Tools in the Age of AI](docs/vpn-book-zh.md) &nbsp;[搭建自己的 VPN 服务器](docs/vpn-book-zh.md)**
 

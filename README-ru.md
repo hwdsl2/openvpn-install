@@ -10,7 +10,7 @@
 
 Этот скрипт позволит вам настроить собственный VPN-сервер всего за несколько минут, даже если вы раньше не использовали OpenVPN. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) — это протокол VPN с открытым исходным кодом, надёжный и очень гибкий.
 
-См. также: скрипты автоматической установки серверов [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-ru.md) и [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md). Для запуска OpenVPN в Docker см. [сервер OpenVPN на Docker](https://github.com/hwdsl2/docker-openvpn/blob/main/README-ru.md).
+См. также: скрипты автоматической установки серверов [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-ru.md), [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) и [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-ru.md).
 
 **[&raquo; :book: Книга: Privacy Tools in the Age of AI](docs/vpn-book.md) &nbsp;[Build Your Own VPN Server](docs/vpn-book.md)**
 

@@ -10,7 +10,7 @@ OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fed
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) is an open-source, robust and highly flexible VPN protocol.
 
-See also: [WireGuard](https://github.com/hwdsl2/wireguard-install) and [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) server auto setup scripts. To run OpenVPN in Docker, see [OpenVPN server on Docker](https://github.com/hwdsl2/docker-openvpn).
+See also: [WireGuard](https://github.com/hwdsl2/wireguard-install), [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) and [Headscale](https://github.com/hwdsl2/headscale-install) server auto setup scripts.
 
 **[&raquo; :book: Book: Privacy Tools in the Age of AI](docs/vpn-book.md) &nbsp;[Build Your Own VPN Server](docs/vpn-book.md)**
 
