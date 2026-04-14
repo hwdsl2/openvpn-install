@@ -4,15 +4,14 @@
 
 [![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://img.shields.io/github/stars/hwdsl2/openvpn-install.svg?cacheSeconds=86400&logo=github&style=flat)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-**Новинка:** Также доступно: [сервер OpenVPN на Docker](https://github.com/hwdsl2/docker-openvpn/blob/main/README-ru.md).
-
 Установщик сервера OpenVPN для Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 2 и Raspberry Pi OS.
 
 Этот скрипт позволит вам настроить собственный VPN-сервер всего за несколько минут, даже если вы раньше не использовали OpenVPN. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) — это протокол VPN с открытым исходным кодом, надёжный и очень гибкий.
 
-См. также: скрипты автоматической установки серверов [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-ru.md), [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) и [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-ru.md).
-
-**[&raquo; :book: Книга: Privacy Tools in the Age of AI](docs/vpn-book.md) &nbsp;[Build Your Own VPN Server](docs/vpn-book.md)**
+**Также доступно:**
+- Docker VPN: [WireGuard](https://github.com/hwdsl2/docker-wireguard/blob/main/README-ru.md), [OpenVPN](https://github.com/hwdsl2/docker-openvpn/blob/main/README-ru.md), [IPsec VPN](https://github.com/hwdsl2/docker-ipsec-vpn-server/blob/master/README-ru.md), [Headscale](https://github.com/hwdsl2/docker-headscale/blob/main/README-ru.md)
+- Docker ИИ/Аудио: [Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md), [Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md), [Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md), [LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)
+- :book: Книга: [Privacy Tools in the Age of AI](docs/vpn-book.md), [Build Your Own VPN Server](docs/vpn-book.md)
 
 ## Возможности
 
@@ -47,6 +46,8 @@ sudo bash openvpn.sh --auto
 
 <p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
+
+**Примечание:** При желании вы можете установить [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-ru.md), [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) и/или [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-ru.md) на тот же сервер.
 
 Для серверов с внешним файрволом (например, [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/firewall/docs/firewalls)) откройте UDP-порт 1194 для VPN.
 
