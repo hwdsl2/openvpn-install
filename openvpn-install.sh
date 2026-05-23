@@ -1210,6 +1210,9 @@ finish_setup() {
 	echo
 	echo "The client configuration is available in: $export_dir$client.ovpn"
 	echo "New clients can be added by running this script again."
+	echo
+	echo "Community discussions and updates:"
+	echo "https://www.reddit.com/r/selfhostedstack/"
 }
 
 select_menu_option() {
