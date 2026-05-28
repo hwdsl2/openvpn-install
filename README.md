@@ -50,7 +50,8 @@ See the script in action (terminal recording).
 </details>
 
 > [!TIP]
-> [Subscribe for project updates](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=vpn) and get free VPN and AI deployment guides (PDF).   
+> [Subscribe for project updates](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=vpn) (1–2 emails/month) and get free VPN and AI deployment guides (PDF).
+> 
 > Optionally install [WireGuard](https://github.com/hwdsl2/wireguard-install), [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) and/or [Headscale](https://github.com/hwdsl2/headscale-install) on the same server.
 
 For servers with an external firewall (e.g. [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/firewall/docs/firewalls)), open UDP port 1194 for the VPN.
