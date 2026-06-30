@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://raw.githubusercontent.com/hwdsl2/badges/main/img/github-stars-openvpn-install.svg)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-Установщик сервера OpenVPN для Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 2 и Raspberry Pi OS.
+Установщик сервера OpenVPN для Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE и Raspberry Pi OS.
 
 Этот скрипт позволит вам настроить собственный VPN-сервер всего за несколько минут, даже если вы раньше не использовали OpenVPN. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) — это протокол VPN с открытым исходным кодом, надёжный и очень гибкий.
 
@@ -183,7 +183,6 @@ Options:
 - Поддержка автоматической установки с параметрами по умолчанию или пользовательскими параметрами  
 - Поддержка использования DNS-имени в качестве адреса сервера  
 - Добавлена поддержка openSUSE Linux  
-- Добавлена поддержка Amazon Linux 2  
 - Поддержка экспорта конфигурации для существующего VPN-клиента  
 - Поддержка просмотра списка существующих VPN-клиентов  
 - Поддержка пользовательских DNS-серверов для VPN-клиентов  

@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://raw.githubusercontent.com/hwdsl2/badges/main/img/github-stars-openvpn-install.svg)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 2 and Raspberry Pi OS.
+OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE and Raspberry Pi OS.
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) is an open-source, robust and highly flexible VPN protocol.
 
@@ -183,7 +183,6 @@ List of enhancements over Nyr/openvpn-install.
 - Supports auto install using default or custom options
 - Supports using a DNS name as server address
 - Added support for openSUSE Linux
-- Added support for Amazon Linux 2
 - Supports exporting configuration for an existing VPN client
 - Supports listing existing VPN clients
 - Supports custom DNS server(s) for VPN clients
