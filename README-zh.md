@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://raw.githubusercontent.com/hwdsl2/badges/main/img/github-stars-openvpn-install.svg)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-使用 Linux 脚本一键快速搭建自己的 OpenVPN 服务器。支持 Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE 和 Raspberry Pi OS。
+使用 Linux 脚本一键快速搭建自己的 OpenVPN 服务器。支持 Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 和 Raspberry Pi OS。
 
 该脚本可让你在几分钟内建立自己的 VPN 服务器，即使你以前没有使用过 OpenVPN。[OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) 是一种开源、强大且高度灵活的 VPN 协议。
 
@@ -183,6 +183,7 @@ To customize options, you may also run this script without arguments.
 - 支持使用默认或自定义选项自动安装
 - 支持使用域名作为服务器地址
 - 增加了对 openSUSE Linux 的支持
+- 增加了对 Amazon Linux 2023 的支持
 - 支持导出现有 VPN 客户端的配置
 - 支持列出现有的 VPN 客户端
 - 支持为 VPN 客户端自定义 DNS 服务器
