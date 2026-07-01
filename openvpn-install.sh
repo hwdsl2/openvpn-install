@@ -15,6 +15,7 @@ exiterr()  { echo "Error: $1" >&2; exit 1; }
 exiterr2() { exiterr "'apt-get install' failed."; }
 exiterr3() { exiterr "'yum install' failed."; }
 exiterr4() { exiterr "'zypper install' failed."; }
+exiterr5() { exiterr "'dnf install' failed."; }
 
 check_ip() {
 	IP_REGEX='^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
@@ -96,7 +97,9 @@ check_os() {
 		os_version="7"
 		group_name="nobody"
 	elif grep -qs "Amazon Linux release 2023" /etc/system-release; then
-		exiterr "Amazon Linux 2023 is not supported."
+		os="amzn"
+		os_version="2023"
+		group_name="nobody"
 	elif [[ -e /etc/fedora-release ]]; then
 		os="fedora"
 		os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
@@ -116,7 +119,7 @@ check_os() {
 		group_name="nogroup"
 	else
 		exiterr "This installer seems to be running on an unsupported distribution.
-Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, RHEL, Fedora, openSUSE and Amazon Linux 2."
+Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, RHEL, Fedora, openSUSE and Amazon Linux 2023."
 	fi
 }
 
@@ -329,7 +332,7 @@ check_args() {
 }
 
 check_nftables() {
-	if [ "$os" = "centos" ] || [ "$os" = "rhel" ]; then
+	if [ "$os" = "centos" ] || [ "$os" = "rhel" ] || [ "$os" = "amzn" ]; then
 		if grep -qs "hwdsl2 VPN script" /etc/sysconfig/nftables.conf \
 			|| systemctl is-active --quiet nftables 2>/dev/null; then
 			exiterr "This system has nftables enabled, which is not supported by this installer."
@@ -371,6 +374,11 @@ install_iproute() {
 				set -x
 				zypper install iproute2 >/dev/null
 			) || exiterr4
+		elif [ "$os" = "amzn" ] || [ "$os" = "fedora" ]; then
+			(
+				set -x
+				dnf install -y iproute >/dev/null
+			) || exiterr5
 		else
 			(
 				set -x
@@ -716,7 +724,7 @@ show_setup_ready() {
 check_firewall() {
 	# Install a firewall if firewalld or iptables are not already available
 	if ! systemctl is-active --quiet firewalld.service && ! hash iptables 2>/dev/null; then
-		if [[ "$os" == "centos" || "$os" == "fedora" || "$os" == "rhel" ]]; then
+		if [[ "$os" == "centos" || "$os" == "fedora" || "$os" == "rhel" || "$os" == "amzn" ]]; then
 			firewall="firewalld"
 		elif [[ "$os" == "openSUSE" ]]; then
 			firewall="firewalld"
@@ -794,6 +802,11 @@ install_pkgs() {
 			set -x
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
 		) || exiterr3
+	elif [[ "$os" = "amzn" ]]; then
+		(
+			set -x
+			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
+		) || exiterr5
 	elif [[ "$os" = "rhel" ]]; then
 		(
 			set -x
@@ -804,7 +817,7 @@ install_pkgs() {
 		(
 			set -x
 			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
-		) || exiterr "'dnf install' failed."
+		) || exiterr5
 	else
 		# Else, OS must be openSUSE
 		(
@@ -835,6 +848,12 @@ remove_pkgs() {
 			rm -rf /etc/openvpn/server
 		)
 		rm -f /etc/openvpn/ipp.txt
+	elif [[ "$os" = "amzn" ]]; then
+		(
+			set -x
+			dnf remove -y openvpn >/dev/null
+			rm -rf /etc/openvpn/server
+		)
 	else
 		# Else, OS must be CentOS, RHEL or Fedora
 		(
@@ -1159,11 +1178,11 @@ update_selinux() {
 					yum -y -q install policycoreutils-python >/dev/null
 				) || exiterr3
 			else
-				# CentOS 8/9/10, RHEL or Fedora
+				# CentOS 8/9/10, RHEL, Fedora or Amazon Linux 2023
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
-				) || exiterr "'dnf install' failed."
+				) || exiterr5
 			fi
 		fi
 		semanage port -a -t openvpn_port_t -p "$protocol" "$port"
