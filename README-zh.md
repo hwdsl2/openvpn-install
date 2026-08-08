@@ -2,9 +2,9 @@
 
 # OpenVPN 服务器一键安装脚本
 
-[![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) &nbsp;[![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://raw.githubusercontent.com/hwdsl2/badges/main/img/github-stars-openvpn-install.svg)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-使用 Linux 脚本一键快速搭建自己的 OpenVPN 服务器。支持 Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 2 和 Raspberry Pi OS。
+使用 Linux 脚本一键快速搭建自己的 OpenVPN 服务器。支持 Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 和 Raspberry Pi OS。
 
 该脚本可让你在几分钟内建立自己的 VPN 服务器，即使你以前没有使用过 OpenVPN。[OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) 是一种开源、强大且高度灵活的 VPN 协议。
 
@@ -19,6 +19,13 @@
 - 生成 VPN 配置文件以自动配置 Windows, macOS, iOS 和 Android 设备
 - 支持管理 OpenVPN 用户和证书
 - 优化 `sysctl` 设置以提高 VPN 性能
+- 为 VPN 客户端提供双栈 IPv4 和 IPv6 支持
+
+**另提供：**
+
+- Docker VPN：[WireGuard](https://github.com/hwdsl2/docker-wireguard/blob/main/README-zh.md)、[OpenVPN](https://github.com/hwdsl2/docker-openvpn/blob/main/README-zh.md)、[IPsec VPN](https://github.com/hwdsl2/docker-ipsec-vpn-server/blob/master/README-zh.md)、[Headscale](https://github.com/hwdsl2/docker-headscale/blob/main/README-zh.md)
+- AI：[自托管 AI 套件](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh.md)，用于本地 LLM、聊天、RAG、语音和 AI 工具
+- 图书：[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)、[Privacy Tools in the Age of AI](docs/vpn-book-zh.md)
 
 ## 安装说明
 
@@ -45,6 +52,9 @@ sudo bash openvpn.sh --auto
 
 <p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
+
+> [!TIP]
+> 你可以选择在同一台服务器上安装 [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-zh.md)、[IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md) 和/或 [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-zh.md)。
 
 对于有外部防火墙的服务器（比如 [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/firewall/docs/firewalls)），请为 VPN 打开 UDP 端口 1194。
 
@@ -145,6 +155,12 @@ To customize options, you may also run this script without arguments.
 ```
 </details>
 
+## 社区
+
+- 📬 [订阅项目更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=vpn-zh)（每月 1–2 封邮件）——获取免费的 VPN 和 AI 部署指南（PDF，英文）
+- 💬 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社区参与讨论
+- ⭐ 如果你觉得本项目有用，请为仓库加星——这有助于让更多人发现它。
+
 ## 下一步
 
 安装完成后，你可以再次运行脚本来管理用户或者卸载 OpenVPN。
@@ -153,13 +169,13 @@ To customize options, you may also run this script without arguments.
 
 **[配置 OpenVPN 客户端](docs/clients-zh.md)**
 
-**阅读 [:book: VPN book](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-X8X5FVFZC) 以访问 [额外内容](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-X8X5FVFZC)。**
+**阅读 [:book: VPN book](docs/vpn-book-zh.md) 以访问[额外内容](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-X8X5FVFZC)。**
 
 开始使用自己的专属 VPN! :sparkles::tada::rocket::sparkles:
 
 ## 致谢
 
-此脚本基于 [Nyr 和 contributors](https://github.com/Nyr/openvpn-install) 的出色工作，并进行了增强和更改以与 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) 项目兼容。
+此脚本基于 [Nyr 和 contributors](https://github.com/Nyr/openvpn-install) 的出色工作，并进行了增强和更改以与 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md) 项目兼容。
 
 <details>
 <summary>
@@ -171,7 +187,7 @@ To customize options, you may also run this script without arguments.
 - 支持使用默认或自定义选项自动安装
 - 支持使用域名作为服务器地址
 - 增加了对 openSUSE Linux 的支持
-- 增加了对 Amazon Linux 2 的支持
+- 增加了对 Amazon Linux 2023 的支持
 - 支持导出现有 VPN 客户端的配置
 - 支持列出现有的 VPN 客户端
 - 支持为 VPN 客户端自定义 DNS 服务器

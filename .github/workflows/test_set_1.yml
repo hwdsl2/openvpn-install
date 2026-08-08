@@ -1,22 +1,25 @@
 #
-# Copyright (C) 2022-2024 Lin Song <linsongui@gmail.com>
+# Copyright (C) 2022-2026 Lin Song <linsongui@gmail.com>
 
 name: test_set_1
 
 on: workflow_call
 
+permissions:
+  contents: read
+
 jobs:
   test_set_1:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.repository_owner == 'hwdsl2'
     strategy:
       matrix:
-        os_version: ["centos:9s", "rockylinux:8", "almalinux:9", "almalinux:8", "amazonlinux:2"]
+        os_version: ["centos:10s", "centos:9s", "amazonlinux:2023", "rockylinux:8", "almalinux:10", "almalinux:9", "almalinux:8"]
       fail-fast: false
     env:
       OS_VERSION: ${{ matrix.os_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Build
@@ -41,8 +44,14 @@ jobs:
           }
 
           cd /opt/src
-          yum -y -q update
-          yum -y -q install wget kmod procps-ng net-tools
+          pkg_cmd=yum
+          if grep -qs "Amazon Linux release 2023" /etc/system-release; then
+            pkg_cmd=dnf
+          fi
+          if grep -qs -i rocky /etc/redhat-release; then
+            "$pkg_cmd" -y -q update
+          fi
+          "$pkg_cmd" -y -q install wget kmod procps-ng net-tools
 
           cp -f /opt/src/scripts/openvpn-install.sh ./openvpn.sh
 
@@ -140,6 +149,8 @@ jobs:
 
           if [ "$OS_VERSION" = "centos:9s" ]; then
             echo "FROM quay.io/centos/centos:stream9" > Dockerfile
+          elif [ "$OS_VERSION" = "centos:10s" ]; then
+            echo "FROM quay.io/centos/centos:stream10" > Dockerfile
           elif [ "$OS_VERSION" = "centos:8s" ]; then
             echo "FROM quay.io/centos/centos:stream8" > Dockerfile
           else
@@ -148,18 +159,17 @@ jobs:
 
           cat >> Dockerfile <<'EOF'
 
-          ENV container docker
+          ENV container=docker
           WORKDIR /opt/src
-
-          RUN if command -v amazon-linux-extras; then amazon-linux-extras install -y kernel-ng; fi
           EOF
 
-          if [ "$OS_VERSION" = "centos:9s" ]; then
+          if [ "$OS_VERSION" = "amazonlinux:2023" ]; then
+            echo "RUN dnf -y -q install systemd" >> Dockerfile
+          elif [ "$OS_VERSION" = "centos:9s" ] || [ "$OS_VERSION" = "centos:10s" ]; then
             echo "RUN yum -y -q install systemd" >> Dockerfile
           fi
 
           cat >> Dockerfile <<'EOF'
-
           RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ "$i" = \
           systemd-tmpfiles-setup.service ] || rm -f "$i"; done); \
           rm -f /lib/systemd/system/multi-user.target.wants/*; \
@@ -184,8 +194,8 @@ jobs:
 
       - name: Test
         run: |
-          docker run -d --name "${OS_VERSION//:}-test-1" -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
-            --privileged "${OS_VERSION//:}-test"
+          docker run -d --name "${OS_VERSION//:}-test-1" -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+            --cgroupns=host --privileged "${OS_VERSION//:}-test"
           sleep 5
           docker exec "${OS_VERSION//:}-test-1" /opt/src/run.sh "${OS_VERSION::6}"
 

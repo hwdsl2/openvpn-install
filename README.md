@@ -2,9 +2,9 @@
 
 # OpenVPN Server Auto Setup Script
 
-[![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) &nbsp;[![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/openvpn-install/actions/workflows/main.yml) [![GitHub Stars](https://raw.githubusercontent.com/hwdsl2/badges/main/img/github-stars-openvpn-install.svg)](https://github.com/hwdsl2/openvpn-install/stargazers) [![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
-OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux 2 and Raspberry Pi OS.
+OpenVPN server installer for Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE, Amazon Linux and Raspberry Pi OS.
 
 This script will let you set up your own VPN server in just a few minutes, even if you haven't used OpenVPN before. [OpenVPN](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/) is an open-source, robust and highly flexible VPN protocol.
 
@@ -19,6 +19,13 @@ See also: [WireGuard](https://github.com/hwdsl2/wireguard-install) and [IPsec VP
 - Generates VPN profiles to auto-configure Windows, macOS, iOS and Android devices
 - Supports managing OpenVPN users and certificates
 - Optimizes `sysctl` settings for improved VPN performance
+- Dual-stack IPv4 and IPv6 support for VPN clients
+
+**Also available:**
+
+- Docker VPN: [WireGuard](https://github.com/hwdsl2/docker-wireguard), [OpenVPN](https://github.com/hwdsl2/docker-openvpn), [IPsec VPN](https://github.com/hwdsl2/docker-ipsec-vpn-server), [Headscale](https://github.com/hwdsl2/docker-headscale)
+- AI: [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack) for local LLMs, chat, RAG, voice and AI tools
+- Books: [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon), [Privacy Tools in the Age of AI](docs/vpn-book.md)
 
 ## Installation
 
@@ -45,6 +52,9 @@ See the script in action (terminal recording).
 
 <p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
+
+> [!TIP]
+> Optionally install [WireGuard](https://github.com/hwdsl2/wireguard-install), [IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) and/or [Headscale](https://github.com/hwdsl2/headscale-install) on the same server.
 
 For servers with an external firewall (e.g. [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/firewall/docs/firewalls)), open UDP port 1194 for the VPN.
 
@@ -145,6 +155,12 @@ To customize options, you may also run this script without arguments.
 ```
 </details>
 
+## Community
+
+- 📬 [Subscribe for project updates](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=vpn) (1–2 emails/month) — get free VPN and AI deployment guides (PDF)
+- 💬 Join the [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) community for discussions
+- ⭐ Star the repository if you find it useful — it helps others discover it
+
 ## Next steps
 
 After setup, you can run the script again to manage users or uninstall OpenVPN.
@@ -153,7 +169,7 @@ Get your computer or device to use the VPN. Please refer to:
 
 **[Configure OpenVPN Clients](docs/clients.md)**
 
-**Read [:book: VPN book](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-O5O7FVF8J) to access [extra content](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-O5O7FVF8J).**
+**Read [:book: VPN book](docs/vpn-book.md) to access [extra content](https://ko-fi.com/post/Support-this-project-and-get-access-to-supporter-o-O5O7FVF8J).**
 
 Enjoy your very own VPN! :sparkles::tada::rocket::sparkles:
 
@@ -171,7 +187,7 @@ List of enhancements over Nyr/openvpn-install.
 - Supports auto install using default or custom options
 - Supports using a DNS name as server address
 - Added support for openSUSE Linux
-- Added support for Amazon Linux 2
+- Added support for Amazon Linux 2023
 - Supports exporting configuration for an existing VPN client
 - Supports listing existing VPN clients
 - Supports custom DNS server(s) for VPN clients

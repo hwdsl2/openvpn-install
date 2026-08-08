@@ -1,20 +1,23 @@
 #
-# Copyright (C) 2022-2024 Lin Song <linsongui@gmail.com>
+# Copyright (C) 2022-2026 Lin Song <linsongui@gmail.com>
 
 name: test_set_3
 
 on: workflow_call
+
+permissions:
+  contents: read
 
 jobs:
   test_set_3:
     if: github.repository_owner == 'hwdsl2'
     strategy:
       matrix:
-        os: [ubuntu-24.04, ubuntu-22.04, ubuntu-20.04]
+        os: [ubuntu-24.04, ubuntu-22.04]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Test
@@ -27,7 +30,6 @@ jobs:
 
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -yqq update
-          sudo apt-get -yqq dist-upgrade
           sudo apt-get -yqq install wget
 
           cp -f "$GITHUB_WORKSPACE"/openvpn-install.sh ./openvpn.sh

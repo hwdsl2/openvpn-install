@@ -1,23 +1,26 @@
 #
-# Copyright (C) 2022-2024 Lin Song <linsongui@gmail.com>
+# Copyright (C) 2022-2026 Lin Song <linsongui@gmail.com>
 
 name: test_set_2
 
 on: workflow_call
 
+permissions:
+  contents: read
+
 jobs:
   test_set_2:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.repository_owner == 'hwdsl2'
     strategy:
       matrix:
-        os_version: ["debian:12", "debian:11", "debian:10"]
+        os_version: ["debian:13", "debian:12", "debian:11"]
       fail-fast: false
     container:
       image: ${{ matrix.os_version }}
       options: --cap-add=NET_ADMIN --device=/dev/net/tun
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Test
@@ -30,7 +33,6 @@ jobs:
 
           export DEBIAN_FRONTEND=noninteractive
           apt-get -yqq update
-          apt-get -yqq dist-upgrade
           apt-get -yqq install wget kmod procps net-tools
 
           cp -f "$GITHUB_WORKSPACE"/openvpn-install.sh ./openvpn.sh

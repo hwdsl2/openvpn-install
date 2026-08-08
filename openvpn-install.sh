@@ -5,7 +5,7 @@
 # Based on the work of Nyr and contributors at:
 # https://github.com/Nyr/openvpn-install
 #
-# Copyright (c) 2022-2024 Lin Song <linsongui@gmail.com>
+# Copyright (c) 2022-2026 Lin Song <linsongui@gmail.com>
 # Copyright (c) 2013-2023 Nyr
 #
 # Released under the MIT License, see the accompanying file LICENSE.txt
@@ -15,6 +15,7 @@ exiterr()  { echo "Error: $1" >&2; exit 1; }
 exiterr2() { exiterr "'apt-get install' failed."; }
 exiterr3() { exiterr "'yum install' failed."; }
 exiterr4() { exiterr "'zypper install' failed."; }
+exiterr5() { exiterr "'dnf install' failed."; }
 
 check_ip() {
 	IP_REGEX='^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
@@ -55,11 +56,38 @@ check_os() {
 	if grep -qs "ubuntu" /etc/os-release; then
 		os="ubuntu"
 		os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
+		if [[ -z "$os_version" || ! "$os_version" =~ ^[0-9]+$ || "$os_version" -lt 2004 ]]; then
+			ubuntu_codename=$(grep 'UBUNTU_CODENAME' /etc/os-release | cut -d '=' -f 2 | tr -d '"')
+			case "$ubuntu_codename" in
+				focal)    os_version=2004 ;;
+				jammy)    os_version=2204 ;;
+				noble)    os_version=2404 ;;
+				resolute) os_version=2604 ;;
+			esac
+		fi
 		group_name="nogroup"
 	elif [[ -e /etc/debian_version ]]; then
 		os="debian"
 		os_version=$(grep -oE '[0-9]+' /etc/debian_version | head -1)
+		if [[ -z "$os_version" ]]; then
+			debian_codename=$(grep '^DEBIAN_CODENAME' /etc/os-release 2>/dev/null | cut -d '=' -f 2)
+			case "$debian_codename" in
+				buster)   os_version=10 ;;
+				bullseye) os_version=11 ;;
+				bookworm) os_version=12 ;;
+				trixie)   os_version=13 ;;
+			esac
+		fi
 		group_name="nogroup"
+	elif grep -qs "Alibaba Cloud Linux" /etc/system-release 2>/dev/null; then
+		os="centos"
+		al_ver=$(grep -oE '[0-9]+' /etc/system-release | head -1)
+		if [[ "$al_ver" -ge 3 ]]; then
+			os_version=9
+		else
+			os_version=7
+		fi
+		group_name="nobody"
 	elif [[ -e /etc/almalinux-release || -e /etc/rocky-release || -e /etc/centos-release ]]; then
 		os="centos"
 		os_version=$(grep -shoE '[0-9]+' /etc/almalinux-release /etc/rocky-release /etc/centos-release | head -1)
@@ -69,18 +97,29 @@ check_os() {
 		os_version="7"
 		group_name="nobody"
 	elif grep -qs "Amazon Linux release 2023" /etc/system-release; then
-		exiterr "Amazon Linux 2023 is not supported."
+		os="amzn"
+		os_version="2023"
+		group_name="nobody"
 	elif [[ -e /etc/fedora-release ]]; then
 		os="fedora"
 		os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
 		group_name="nobody"
-	elif [[ -e /etc/SUSE-brand && "$(head -1 /etc/SUSE-brand)" == "openSUSE" ]]; then
+	elif [[ -e /etc/redhat-release ]]; then
+		os="rhel"
+		os_version=$(grep -oE '[0-9]+' /etc/redhat-release | head -1)
+		group_name="nobody"
+	elif [[ -e /etc/SUSE-brand && "$(head -1 /etc/SUSE-brand)" == "openSUSE" ]] \
+		|| grep -qs '^ID=.*opensuse' /etc/os-release; then
 		os="openSUSE"
-		os_version=$(tail -1 /etc/SUSE-brand | grep -oE '[0-9\\.]+')
+		if [[ -e /etc/SUSE-brand ]]; then
+			os_version=$(tail -1 /etc/SUSE-brand | grep -oE '[0-9\\.]+')
+		else
+			os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2)
+		fi
 		group_name="nogroup"
 	else
 		exiterr "This installer seems to be running on an unsupported distribution.
-Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, Fedora, openSUSE and Amazon Linux 2."
+Supported distros are Ubuntu, Debian, AlmaLinux, Rocky Linux, CentOS, RHEL, Fedora, openSUSE and Amazon Linux 2023."
 	fi
 }
 
@@ -98,6 +137,10 @@ This version of Debian is too old and unsupported."
 			exiterr "CentOS 8 or higher is required to use this installer.
 This version of CentOS is too old and unsupported."
 		fi
+	fi
+	if [[ "$os" == "rhel" && "$os_version" -lt 8 ]]; then
+		exiterr "RHEL 8 or higher is required to use this installer.
+This version of RHEL is too old and unsupported."
 	fi
 }
 
@@ -289,7 +332,7 @@ check_args() {
 }
 
 check_nftables() {
-	if [ "$os" = "centos" ]; then
+	if [ "$os" = "centos" ] || [ "$os" = "rhel" ] || [ "$os" = "amzn" ]; then
 		if grep -qs "hwdsl2 VPN script" /etc/sysconfig/nftables.conf \
 			|| systemctl is-active --quiet nftables 2>/dev/null; then
 			exiterr "This system has nftables enabled, which is not supported by this installer."
@@ -331,6 +374,11 @@ install_iproute() {
 				set -x
 				zypper install iproute2 >/dev/null
 			) || exiterr4
+		elif [ "$os" = "amzn" ] || [ "$os" = "fedora" ]; then
+			(
+				set -x
+				dnf install -y iproute >/dev/null
+			) || exiterr5
 		else
 			(
 				set -x
@@ -360,7 +408,7 @@ EOF
 show_header3() {
 cat <<'EOF'
 
-Copyright (c) 2022-2024 Lin Song
+Copyright (c) 2022-2026 Lin Song
 Copyright (c) 2013-2023 Nyr
 EOF
 }
@@ -600,7 +648,7 @@ select_protocol() {
 select_port() {
 	if [ "$auto" = 0 ]; then
 		echo
-		echo "Which port should OpenVPN listen to?"
+		echo "Which port should OpenVPN listen on?"
 		read -rp "Port [1194]: " port
 		until [[ -z "$port" || "$port" =~ ^[0-9]+$ && "$port" -le 65535 ]]; do
 			echo "$port: invalid port."
@@ -676,7 +724,7 @@ show_setup_ready() {
 check_firewall() {
 	# Install a firewall if firewalld or iptables are not already available
 	if ! systemctl is-active --quiet firewalld.service && ! hash iptables 2>/dev/null; then
-		if [[ "$os" == "centos" || "$os" == "fedora" ]]; then
+		if [[ "$os" == "centos" || "$os" == "fedora" || "$os" == "rhel" || "$os" == "amzn" ]]; then
 			firewall="firewalld"
 		elif [[ "$os" == "openSUSE" ]]; then
 			firewall="firewalld"
@@ -754,11 +802,22 @@ install_pkgs() {
 			set -x
 			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
 		) || exiterr3
+	elif [[ "$os" = "amzn" ]]; then
+		(
+			set -x
+			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
+		) || exiterr5
+	elif [[ "$os" = "rhel" ]]; then
+		(
+			set -x
+			yum -y -q install https://dl.fedoraproject.org/pub/epel/epel-release-latest-"$os_version".noarch.rpm >/dev/null
+			yum -y -q install openvpn openssl ca-certificates tar $firewall >/dev/null 2>&1
+		) || exiterr3
 	elif [[ "$os" = "fedora" ]]; then
 		(
 			set -x
 			dnf install -y openvpn openssl ca-certificates tar $firewall >/dev/null
-		) || exiterr "'dnf install' failed."
+		) || exiterr5
 	else
 		# Else, OS must be openSUSE
 		(
@@ -789,8 +848,14 @@ remove_pkgs() {
 			rm -rf /etc/openvpn/server
 		)
 		rm -f /etc/openvpn/ipp.txt
+	elif [[ "$os" = "amzn" ]]; then
+		(
+			set -x
+			dnf remove -y openvpn >/dev/null
+			rm -rf /etc/openvpn/server
+		)
 	else
-		# Else, OS must be CentOS or Fedora
+		# Else, OS must be CentOS, RHEL or Fedora
 		(
 			set -x
 			yum -y -q remove openvpn >/dev/null
@@ -829,24 +894,25 @@ create_firewall_rules() {
 			ip6tables_path=$(command -v ip6tables-legacy)
 		fi
 		echo "[Unit]
-Before=network.target
+After=network-online.target
+Wants=network-online.target
 [Service]
 Type=oneshot
-ExecStart=$iptables_path -t nat -A POSTROUTING -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j MASQUERADE
-ExecStart=$iptables_path -I INPUT -p $protocol --dport $port -j ACCEPT
-ExecStart=$iptables_path -I FORWARD -s 10.8.0.0/24 -j ACCEPT
-ExecStart=$iptables_path -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-ExecStop=$iptables_path -t nat -D POSTROUTING -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j MASQUERADE
-ExecStop=$iptables_path -D INPUT -p $protocol --dport $port -j ACCEPT
-ExecStop=$iptables_path -D FORWARD -s 10.8.0.0/24 -j ACCEPT
-ExecStop=$iptables_path -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" > /etc/systemd/system/openvpn-iptables.service
+ExecStart=$iptables_path -w 5 -t nat -A POSTROUTING -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j MASQUERADE
+ExecStart=$iptables_path -w 5 -I INPUT -p $protocol --dport $port -j ACCEPT
+ExecStart=$iptables_path -w 5 -I FORWARD -s 10.8.0.0/24 -j ACCEPT
+ExecStart=$iptables_path -w 5 -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+ExecStop=$iptables_path -w 5 -t nat -D POSTROUTING -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j MASQUERADE
+ExecStop=$iptables_path -w 5 -D INPUT -p $protocol --dport $port -j ACCEPT
+ExecStop=$iptables_path -w 5 -D FORWARD -s 10.8.0.0/24 -j ACCEPT
+ExecStop=$iptables_path -w 5 -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" > /etc/systemd/system/openvpn-iptables.service
 		if [[ -n "$ip6" ]]; then
-			echo "ExecStart=$ip6tables_path -t nat -A POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j MASQUERADE
-ExecStart=$ip6tables_path -I FORWARD -s fddd:1194:1194:1194::/64 -j ACCEPT
-ExecStart=$ip6tables_path -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-ExecStop=$ip6tables_path -t nat -D POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j MASQUERADE
-ExecStop=$ip6tables_path -D FORWARD -s fddd:1194:1194:1194::/64 -j ACCEPT
-ExecStop=$ip6tables_path -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" >> /etc/systemd/system/openvpn-iptables.service
+			echo "ExecStart=$ip6tables_path -w 5 -t nat -A POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j MASQUERADE
+ExecStart=$ip6tables_path -w 5 -I FORWARD -s fddd:1194:1194:1194::/64 -j ACCEPT
+ExecStart=$ip6tables_path -w 5 -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+ExecStop=$ip6tables_path -w 5 -t nat -D POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j MASQUERADE
+ExecStop=$ip6tables_path -w 5 -D FORWARD -s fddd:1194:1194:1194::/64 -j ACCEPT
+ExecStop=$ip6tables_path -w 5 -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" >> /etc/systemd/system/openvpn-iptables.service
 		fi
 		echo "RemainAfterExit=yes
 [Install]
@@ -888,9 +954,9 @@ remove_firewall_rules() {
 
 install_easyrsa() {
 	# Get easy-rsa
-	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.1/EasyRSA-3.2.1.tgz'
+	easy_rsa_url='https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.6/EasyRSA-3.2.6.tgz'
 	mkdir -p /etc/openvpn/server/easy-rsa/
-	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1
+	{ wget -t 3 -T 30 -qO- "$easy_rsa_url" 2>/dev/null || curl -m 30 -sL "$easy_rsa_url" ; } | tar xz -C /etc/openvpn/server/easy-rsa/ --strip-components 1 2>/dev/null
 	if [ ! -f /etc/openvpn/server/easy-rsa/easyrsa ]; then
 		exiterr "Failed to download EasyRSA from $easy_rsa_url."
 	fi
@@ -1112,11 +1178,11 @@ update_selinux() {
 					yum -y -q install policycoreutils-python >/dev/null
 				) || exiterr3
 			else
-				# CentOS 8/9 or Fedora
+				# CentOS 8/9/10, RHEL, Fedora or Amazon Linux 2023
 				(
 					set -x
 					dnf install -y policycoreutils-python-utils >/dev/null
-				) || exiterr "'dnf install' failed."
+				) || exiterr5
 			fi
 		fi
 		semanage port -a -t openvpn_port_t -p "$protocol" "$port"
@@ -1163,6 +1229,9 @@ finish_setup() {
 	echo
 	echo "The client configuration is available in: $export_dir$client.ovpn"
 	echo "New clients can be added by running this script again."
+	echo
+	echo "Community discussions and updates:"
+	echo "https://www.reddit.com/r/selfhostedstack/"
 }
 
 select_menu_option() {
@@ -1289,6 +1358,8 @@ revoke_client_ovpn() {
 		./easyrsa --batch --days=3650 gen-crl >/dev/null 2>&1
 	)
 	rm -f /etc/openvpn/server/crl.pem
+	rm -f /etc/openvpn/server/easy-rsa/pki/reqs/"$client".req
+	rm -f /etc/openvpn/server/easy-rsa/pki/private/"$client".key
 	cp /etc/openvpn/server/easy-rsa/pki/crl.pem /etc/openvpn/server/crl.pem
 	# CRL is read with each client connection, when OpenVPN is dropped to nobody
 	chown nobody:"$group_name" /etc/openvpn/server/crl.pem
