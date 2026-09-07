@@ -128,8 +128,8 @@ check_os_ver() {
 		exiterr "Ubuntu 20.04 or higher is required to use this installer.
 This version of Ubuntu is too old and unsupported."
 	fi
-	if [[ "$os" == "debian" && "$os_version" -lt 10 ]]; then
-		exiterr "Debian 10 or higher is required to use this installer.
+	if [[ "$os" == "debian" && "$os_version" -lt 12 ]]; then
+		exiterr "Debian 12 or higher is required to use this installer.
 This version of Debian is too old and unsupported."
 	fi
 	if [[ "$os" == "centos" && "$os_version" -lt 8 ]]; then
