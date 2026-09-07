@@ -351,7 +351,7 @@ install_wget() {
 		(
 			set -x
 			apt-get -yqq update || apt-get -yqq update
-			apt-get -yqq install wget >/dev/null
+			apt-get -yqq install wget ca-certificates >/dev/null
 		) || exiterr2
 	fi
 }
@@ -503,13 +503,31 @@ enter_server_address() {
 	fi
 }
 
+fetch_public_ip() {
+	local ip_addr="" ip_url="$1"
+	if hash wget 2>/dev/null \
+	&& ip_addr=$(wget -T 10 -t 1 -4 --max-redirect=0 -qO- "$ip_url" 2>/dev/null); then
+		ip_addr=${ip_addr%$'\r'}
+		if [[ "$ip_addr" != *$'\n'* && "$ip_addr" != *$'\r'* ]] && check_ip "$ip_addr"; then
+			printf '%s' "$ip_addr"
+			return 0
+		fi
+	fi
+	if hash curl 2>/dev/null \
+	&& ip_addr=$(curl -q -m 10 -4fsS "$ip_url" 2>/dev/null); then
+		ip_addr=${ip_addr%$'\r'}
+		if [[ "$ip_addr" != *$'\n'* && "$ip_addr" != *$'\r'* ]] && check_ip "$ip_addr"; then
+			printf '%s' "$ip_addr"
+			return 0
+		fi
+	fi
+	return 1
+}
+
 find_public_ip() {
-	ip_url1="http://ipv4.icanhazip.com"
-	ip_url2="http://ip1.dynupdate.no-ip.com"
-	# Get public IP and sanitize with grep
-	get_public_ip=$(grep -m 1 -oE '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' <<< "$(wget -T 10 -t 1 -4qO- "$ip_url1" || curl -m 10 -4Ls "$ip_url1")")
+	get_public_ip=$(fetch_public_ip "https://ipv4.icanhazip.com") || get_public_ip=""
 	if ! check_ip "$get_public_ip"; then
-		get_public_ip=$(grep -m 1 -oE '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' <<< "$(wget -T 10 -t 1 -4qO- "$ip_url2" || curl -m 10 -4Ls "$ip_url2")")
+		get_public_ip=$(fetch_public_ip "https://api.ipify.org") || get_public_ip=""
 	fi
 }
 
