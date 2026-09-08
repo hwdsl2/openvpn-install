@@ -21,7 +21,9 @@
 
 - Docker VPN：[WireGuard](https://github.com/hwdsl2/docker-wireguard/blob/main/README-zh-Hant.md)、[OpenVPN](https://github.com/hwdsl2/docker-openvpn/blob/main/README-zh-Hant.md)、[IPsec VPN](https://github.com/hwdsl2/docker-ipsec-vpn-server/blob/master/README-zh-Hant.md)、[Headscale](https://github.com/hwdsl2/docker-headscale/blob/main/README-zh-Hant.md)
 - AI：[自架 AI 套件](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh-Hant.md)，用於本機 LLM、聊天、RAG、語音和 AI 工具
-- :books: 書籍：[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)、[Privacy Tools in the Age of AI](docs/vpn-book-zh-Hant.md)
+- 📚 延伸閱讀：[Privacy Tools in the Age of AI](docs/vpn-book-zh-Hant.md)
+
+> 📘 **新書：**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)。一本關於建置、保護和維運自己的私有 AI 技術棧的實用指南。
 
 ## 安裝說明
 
@@ -153,7 +155,7 @@ To customize options, you may also run this script without arguments.
 
 ## 社群
 
-- 📬 [訂閱專案更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=vpn-zh-hant)（每月 1–2 封郵件）——獲取免費的 VPN 和 AI 部署指南（PDF，英文）
+- 📬 [取得專案更新與免費部署指南](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=vpn-zh-hant)（每月 1–2 封電子郵件；指南為英文 PDF）
 - 💬 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社群，參與討論與專案展示
 - ⭐ 如果你覺得本專案有用，請為儲存庫加星——這能幫助更多人發現它。
 
