@@ -50,8 +50,7 @@ sudo bash openvpn.sh --auto
 <p align="center"><img src="docs/images/demo1.svg"></p>
 </details>
 
-> [!TIP]
-> 你可以选择在同一台服务器上安装 [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-zh.md)、[IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md) 和/或 [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-zh.md)。
+**提示：** 你可以选择在同一台服务器上安装 [WireGuard](https://github.com/hwdsl2/wireguard-install/blob/master/README-zh.md)、[IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md) 和/或 [Headscale](https://github.com/hwdsl2/headscale-install/blob/main/README-zh.md)。
 
 对于有外部防火墙的服务器（比如 [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html)/[GCE](https://cloud.google.com/firewall/docs/firewalls)），请为 VPN 打开 UDP 端口 1194。
 
